@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tajik Fire - Learning</title>
+    <link rel="stylesheet" href="style/learning.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="learning-container">
+        <!-- Шапка с поиском и фильтрами -->
+        <div class="learning-header">
+            <div class="search-box">
+                <input type="text" id="topic-search" placeholder="Search...">
+                <button id="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div class="filters">
+                <select id="difficulty-filter">
+                    <option value="0">All difficulties</option>
+                    <option value="1">★</option>
+                    <option value="2">★★</option>
+                    <option value="3">★★★</option>
+                    <option value="4">★★★★</option>
+                    <option value="5">★★★★★</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Список тем -->
+        <div class="topics-list" id="topics-list">
+            <!-- Динамически заполняется через JS -->
+        </div>
+        
+        <!-- Пагинация -->
+        <div class="pagination" id="pagination">
+            <button id="prev-btn">← Prev</button>
+            <span id="page-info">Page 1 of 5</span>
+            <button id="next-btn">Next →</button>
+        </div>
+        
+        <!-- Детали темы (скрыто изначально) -->
+        <div class="topic-details" id="topic-details" style="display:none;">
+            <div class="topic-header">
+                <h2 id="topic-title"></h2>
+                <div class="topic-meta">
+                    <span id="topic-difficulty"></span>
+                    <button id="back-to-list">← Back to list</button>
+                </div>
+            </div>
+            
+            <!-- Вкладки теории и задач -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="theory">Theory</button>
+                <button class="tab-btn" data-tab="problems">Problems</button>
+            </div>
+            
+            <!-- Контент вкладок -->
+            <div class="tab-content">
+                <div id="theory-content" class="tab-pane active">
+                    <!-- Теория загружается динамически -->
+                </div>
+                <div id="problems-content" class="tab-pane">
+                    <!-- Список задач загружается динамически -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Локализация
+        const i18n = {
+            tj: {
+                search: "Ҷустуҷӯ",
+                difficulty: "Мураккабӣ",
+                theory: "Назария",
+                problems: "Масъалаҳо",
+                back: "Бозгашт",
+                prev: "Қаблӣ",
+                next: "Навбатӣ",
+                page: "Саҳифа"
+            },
+            ru: {
+                search: "Поиск",
+                difficulty: "Сложность",
+                theory: "Теория",
+                problems: "Задачи",
+                back: "Назад",
+                prev: "Предыдущая",
+                next: "Следующая",
+                page: "Страница"
+            },
+            en: {
+                search: "Search",
+                difficulty: "Difficulty",
+                theory: "Theory",
+                problems: "Problems",
+                back: "Back",
+                prev: "Previous",
+                next: "Next",
+                page: "Page"
+            }
+        };
+
+        // Текущее состояние
+        let currentState = {
+            page: 1,
+            perPage: 10,
+            search: '',
+            difficulty: 0,
+            lang: 'ru',
+            currentTopic: null
+        };
+
+        // Инициализация страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            // Установка языка
+            currentState.lang = getCookie('language') || 'ru';
+            applyTranslations();
+            
+            // Загрузка тем
+            loadTopics();
+            
+            // Настройка обработчиков событий
+            document.getElementById('search-btn').addEventListener('click', () => {
+                currentState.search = document.getElementById('topic-search').value;
+                currentState.page = 1;
+                loadTopics();
+            });
+            
+            document.getElementById('difficulty-filter').addEventListener('change', (e) => {
+                currentState.difficulty = parseInt(e.target.value);
+                currentState.page = 1;
+                loadTopics();
+            });
+            
+            document.getElementById('prev-btn').addEventListener('click', () => {
+                if (currentState.page > 1) {
+                    currentState.page--;
+                    loadTopics();
+                }
+            });
+            
+            document.getElementById('next-btn').addEventListener('click', () => {
+                currentState.page++;
+                loadTopics();
+            });
+            
+            document.getElementById('back-to-list').addEventListener('click', () => {
+                document.getElementById('topics-list').style.display = 'block';
+                document.getElementById('topic-details').style.display = 'none';
+            });
+            
+            // Обработчики вкладок
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.dataset.tab;
+                    openTab(tab);
+                });
+            });
+        });
+
+        // Загрузка списка тем
+        async function loadTopics() {
+            const params = new URLSearchParams({
+                page: currentState.page,
+                per_page: currentState.perPage,
+                search: currentState.search
+            });
+            
+            const response = await fetch(`/api/learning/topics?${params}`);
+            const data = await response.json();
+            
+            renderTopics(data.topics);
+            renderPagination(data.total);
+        }
+
+        // Отображение списка тем
+        function renderTopics(topics) {
+            const container = document.getElementById('topics-list');
+            container.innerHTML = '';
+            
+            topics.forEach(topic => {
+                const topicEl = document.createElement('div');
+                topicEl.className = 'topic-card';
+                topicEl.innerHTML = `
+                    <div class="topic-card-header">
+                        <h3>${topic.title}</h3>
+                        <div class="difficulty">${'★'.repeat(topic.difficulty)}</div>
+                    </div>
+                    <p>${topic.description}</p>
+                    <button class="open-topic" data-id="${topic.id}">
+                        ${i18n[currentState.lang].open || 'Open'}
+                    </button>
+                `;
+                container.appendChild(topicEl);
+            });
+            
+            // Обработчики открытия темы
+            document.querySelectorAll('.open-topic').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openTopic(btn.dataset.id);
+                });
+            });
+        }
+
+        // Открытие темы
+        async function openTopic(topicId) {
+            currentState.currentTopic = topicId;
+            
+            // Загрузка метаданных темы
+            const metaResponse = await fetch(`/api/learning/topic/${topicId}/meta`);
+            const meta = await metaResponse.json();
+            
+            document.getElementById('topic-title').textContent = 
+                meta.titles[currentState.lang] || meta.titles.en;
+                
+            document.getElementById('topic-difficulty').textContent = 
+                '★'.repeat(meta.difficulty);
+            
+            // Показываем детали темы
+            document.getElementById('topics-list').style.display = 'none';
+            document.getElementById('topic-details').style.display = 'block';
+            
+            // Загружаем теорию по умолчанию
+            openTab('theory');
+        }
+
+        // Открытие вкладки
+        async function openTab(tabName) {
+            // Активируем кнопку вкладки
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabName);
+            });
+            
+            // Показываем нужную панель
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.toggle('active', pane.id === `${tabName}-content`);
+            });
+            
+            // Загружаем контент если нужно
+            if (tabName === 'theory') {
+                await loadTheory();
+            } else if (tabName === 'problems') {
+                await loadProblems();
+            }
+        }
+
+        // Загрузка теории
+        async function loadTheory() {
+            const response = await fetch(
+                `/api/learning/topic/${currentState.currentTopic}/theory`
+            );
+            const data = await response.json();
+            
+            document.getElementById('theory-content').innerHTML = data.content;
+            MathJax.typeset(); // Рендерим формулы
+        }
+
+        // Загрузка задач
+        async function loadProblems() {
+            const response = await fetch(
+                `/api/learning/topic/${currentState.currentTopic}/problems`
+            );
+            const problems = await response.json();
+            
+            const container = document.getElementById('problems-content');
+            container.innerHTML = '';
+            
+            problems.forEach(problem => {
+                const problemEl = document.createElement('div');
+                problemEl.className = 'problem-card';
+                problemEl.innerHTML = `
+                    <h3>${problem.title}</h3>
+                    <div class="difficulty">${'★'.repeat(problem.difficulty)}</div>
+                    <div class="problem-description">${problem.description}</div>
+                    <button class="solve-problem">Solve</button>
+                `;
+                container.appendChild(problemEl);
+            });
+        }
+
+        // Вспомогательные функции
+        function applyTranslations() {
+            const lang = currentState.lang;
+            document.getElementById('search-btn').placeholder = i18n[lang].search;
+            document.getElementById('difficulty-filter')
+                .previousElementSibling.textContent = i18n[lang].difficulty;
+            document.querySelector('[data-tab="theory"]').textContent = i18n[lang].theory;
+            document.querySelector('[data-tab="problems"]').textContent = i18n[lang].problems;
+            document.getElementById('back-to-list').textContent = i18n[lang].back;
+            document.getElementById('prev-btn').textContent = i18n[lang].prev;
+            document.getElementById('next-btn').textContent = i18n[lang].next;
+        }
+        
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+    </script>
+</body>
+</html>

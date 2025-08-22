@@ -1,0 +1,321 @@
+<!-- <!DOCTYPE html> -->
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="js/scriptjs.js" ></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/floating-menu.css">
+    <link rel="stylesheet" href="styles/index.css">
+
+    <!-- Скрипт -->
+    <script src="js/floating-menu.js" defer></script>
+
+    <title>Архив задач</title>
+    <link rel="icon" href="icons/fire_icon.jpeg" type="image/jpeg">
+</head>
+<body>  
+    <div class="floating-menu-container">
+        <div class="floating-menu-button" id="floatingMenuButton">
+          <img src="icons/icon14.png" alt="Menu">
+        </div> 
+    <div id="floatingMenuContent" class="floating-menu-content">
+            <a href="profile?login={{ user_login }}" class="menu-item">
+          <img src="icons/icon8.png" alt="Profile">
+          <span id="menuProfileText">Мой профиль</span>
+        </a>
+        <a href="compete.html" class="menu-item">
+          <img src="icons/icon7.png" alt="Competition">
+          <span id="menuCompeteText">Соревнование</span>
+        </a>
+        <a href="index.html" class="menu-item">
+          <img src="icons/icon9.png" alt="Archive">
+          <span id="menuArchiveText">Архив задач</span>
+        </a>
+        <a href="news.html" class="menu-item">
+          <img src="icons/icon10.png" alt="News">
+          <span id="menuNewsText">Новости</span>
+        </a>
+        <a href="submission.html" class="menu-item">
+          <img src="icons/icon11.png" alt="Submissions">
+          <span id="menuSubmissionsText">Мои посылки</span>
+        </a>
+        <a href="#" class="menu-item" onclick="openAbout()">
+          <img src="icons/icon15.png" alt="About">
+          <span id="menuAboutText">О нас</span>
+        </a>
+        <a href="#" class="menu-item" onclick="logout()">
+          <img src="icons/icon12.png" alt="Logout">
+          <span id="menuLogoutText">Выход</span>
+        </a>
+      </div>
+    </div>
+    
+    <div style="text-align:center; margin: 20px 0;">
+        <button id="prevPageBtn" class="pagination-btn">« Назад</button>
+        <span id="pageIndicator" style="margin: 0 10px; color: #ccc;"></span>
+        <button id="nextPageBtn" class="pagination-btn">Вперёд »</button>
+    
+        <!-- Новый ввод номера страницы -->
+        <input
+            id="pageInput"
+            type="number"
+            min="1"
+            placeholder="№ страницы"
+            style="width: 80px; margin: 0 5px; padding: 8px; border-radius:6px; border:1px solid #555; background:#222; color:#ccc;"
+        >
+        <button id="goPageBtn" class="pagination-btn">Перейти</button>
+    </div>
+    
+    <ul id="languageList" class="language-list">
+        <li onclick="changeLanguage('english')">English<img src="icons/english_flag.png" alt="English Flag"></li>
+        <li onclick="changeLanguage('russian')">Русский<img src="icons/russian_flag.png" alt="Russian Flag"></li>
+        <li onclick="changeLanguage('tajik')">Тоҷикӣ<img src="icons/tajik_flag.png" alt="Tajik Flag"></li>
+    </ul>
+    
+    <header>
+     
+        <div id="aboutModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAbout()">&times;</span>
+                <h2>О нас</h2>
+                <p>Приветствуем вас в мире Tajik Fire - месте, где идеи превращаются в реальность, а навыки взлетают к новым высотам. Мы не просто платформа для соревнований, мы сообщество людей, которые разделяют страсть к программированию и стремятся к развитию.</p>
+                <p>Наша миссия - вдохновлять и обучать, открывать новые горизонты и помогать вам достичь своих целей. Мы верим в силу знаний и в том, что каждый может стать лучше, если у него есть поддержка и ресурсы.</p>
+                <p>Если у вас есть идеи, вопросы или предложения, не стесняйтесь обращаться к нам. Мы здесь, чтобы помочь вам в каждом шаге вашего пути.</p>
+                <p>Присоединяйтесь к Tajik Fire - месте, где рождаются идеи и совершаются открытия!</p>
+                <ul>
+                    <li>Телефон техподдержки: +992900085961</li>
+                    <li>Электронная почта: gimron34@gmail.com</li>
+                    <li>Телеграмм канал: <a href="https://t.me/tajikk_fire">Tajik Fire в Telegram</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <h1 style="text-align: center; color: white;">Архив</h1>
+    <div id="userLogin" class="user-login"></div>
+    <button id="langBtn" onclick="showLanguagePopup()" class="language-btn">Выбрать язык</button>
+
+    <div class="container">
+        <div class="task-column" id="tasks-container">
+            <!-- Задачи будут загружены динамически -->
+        </div>
+    </div>
+
+
+</body>
+<script>
+    const i18n = {
+    russian: {
+        menuProfileText:    'Мой профиль',
+        menuCompeteText:    'Соревнование',
+        menuArchiveText:    'Архив задач',
+        menuNewsText:       'Новости',
+        menuSubmissionsText:'Мои посылки',
+        menuAboutText:      'О нас',
+        menuLogoutText:     'Выход',
+        langBtn:            'Выбрать язык',
+        prevPageBtn:        '« Назад',
+        nextPageBtn:        'Вперёд »',
+        pageInput:    '№ страницы',
+        pageIndicator:    'Страница {page} из {totalPages}',
+        goPageBtn:          'Перейти'
+    },
+    english: {
+        menuProfileText:    'My Profile',
+        menuCompeteText:    'Competition',
+        menuArchiveText:    'Archive',
+        menuNewsText:       'News',
+        menuSubmissionsText:'My Submissions',
+        menuAboutText:      'About',
+        menuLogoutText:     'Logout',
+        langBtn:            'Select language',
+        prevPageBtn:        '« Prev',
+        nextPageBtn:        'Next »',
+        pageInput:    'Page №',
+        pageIndicator:    'Page {page} of {totalPages}',
+        goPageBtn:          'Go'
+    },
+    tajik: {
+        menuProfileText:    'Профил',
+        menuCompeteText:    'Мусобиқа',
+        menuArchiveText:    'Архив',
+        menuNewsText:       'Хабарҳо',
+        menuSubmissionsText:'Посилкҳои ман',
+        menuAboutText:      'Дар бораи мо',
+        menuLogoutText:     'Хориҷ шудан',
+        langBtn:            'Интихоби забон',
+        prevPageBtn:        '« Қафо',
+        nextPageBtn:        'Пеш »',
+        pageInput:    '№ саҳифа',
+        pageIndicator:    'Саҳифа {page} аз {totalPages}',
+        goPageBtn:          'Гузариш'
+    }
+    };
+
+    function applyLanguage(lang) {
+    Object.entries(i18n[lang]).forEach(([key, txt]) => {
+        const el = document.getElementById(key);
+        if (!el) return;
+        if (el.tagName === 'INPUT') {
+        el.placeholder = txt;
+        } else {
+        el.textContent = txt;
+        }
+    });
+    }
+
+
+       // Определяем текущий язык
+    function getCurrentLanguage() {
+        const match = document.cookie.match(/(?:^|; )language=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : 'russian';
+    }
+
+
+
+    let currentPage = 1;
+    const tasksPerPage = 3;
+    let globalTotal = 0;  // <— сюда сохраняем из ответа сервера
+
+    async function loadTasks(language) {
+        try {
+            const resp = await fetch(
+                `/get_tasks?language=${language}&page=${currentPage}&limit=${tasksPerPage}`
+            );
+            const { tasks, total, page, limit } = await resp.json();
+            globalTotal = total;          // <— сохраняем
+            renderTasks(tasks);
+            updatePagination(total, page, limit);
+        } catch (err) {
+            /* ... */
+        }
+    }
+
+    function renderTasks(tasks) {
+        const container = document.getElementById('tasks-container');
+        container.innerHTML = '';
+        const lang = getCurrentLanguage();
+        tasks.forEach(task => {
+            const el = document.createElement('div');
+            el.className = 'task';
+            el.innerHTML = `
+                <h2>${getTaskPrefix(lang)} ${task.id}</h2>
+                <p>${task.title}</p>
+                <a href="task?id=${task.id}" class="read-more">${getOpenButtonText(lang)}</a>
+            `;
+            container.appendChild(el);
+        });
+    }
+
+    function updatePagination(total, page, limit) {
+        const lang = getCurrentLanguage();                  // текущий язык
+        const totalPages = Math.ceil(total / limit);
+        // берём шаблон из переводов
+        const tmpl = i18n[lang].pageIndicator;
+        // подставляем значения
+        const text = tmpl
+        .replace('{page}', page)
+        .replace('{totalPages}', totalPages);
+        document.getElementById('pageIndicator').textContent = text;
+
+        document.getElementById('prevPageBtn').disabled = page <= 1;
+        document.getElementById('nextPageBtn').disabled = page >= totalPages;
+    }
+
+
+    document.getElementById('prevPageBtn').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadTasks(getCurrentLanguage());
+        }
+    });
+    document.getElementById('nextPageBtn').addEventListener('click', () => {
+        currentPage++;
+        loadTasks(getCurrentLanguage());
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const lang = getCurrentLanguage();
+        loadTasks(lang);
+        // обновляем текст кнопки выбора языка (по аналогии с changeLanguage)
+        const languageBtn = document.querySelector('.language-btn');
+        languageBtn.textContent = {
+            russian: 'Выбрать язык',
+            english: 'Select language',
+            tajik: 'интихоби забон'
+        }[lang];
+    });
+
+    const pageInput = document.getElementById('pageInput');
+    const goPageBtn = document.getElementById('goPageBtn');
+
+    goPageBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(globalTotal / tasksPerPage);
+        const wanted = parseInt(pageInput.value, 10);
+        if (!isNaN(wanted) && wanted >= 1 && wanted <= totalPages) {
+            currentPage = wanted;
+            loadTasks(getCurrentLanguage());
+        } else {
+            alert(`Введите число от 1 до ${totalPages}`);
+        }
+    });
+
+    // Чтобы отлавливать Enter в поле
+    pageInput.addEventListener('keyup', e => {
+        if (e.key === 'Enter') {
+            goPageBtn.click();
+        }
+    });
+
+
+    // Получаем префикс для заголовка задачи (Задача/Task/Вазифа)
+    function getTaskPrefix(language) {
+        const prefixes = {
+            russian: 'Задача',
+            english: 'Task',
+            tajik: 'Вазифа'
+        };
+        return prefixes[language] || prefixes.russian;
+    }
+
+    function getOpenButtonText(language) {
+        const texts = {
+            russian: 'Открыть задачу',
+            english: 'Open task',
+            tajik: 'Масъаларо кушодан'
+        };
+        return texts[language] || texts.russian;
+    }
+
+    async function changeLanguage(language) {
+        await fetch('/api/set_language', {
+            method: 'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({language})
+        });
+        applyLanguage(language);
+        loadTasks(language);
+    }
+
+
+
+    // При загрузке страницы загружаем задачи
+    document.addEventListener('DOMContentLoaded', function() {
+    const currentLang = getCurrentLanguage();
+    applyLanguage(currentLang);
+    loadTasks(currentLang);
+    // Обновляем текст кнопки выбора языка
+    const languageBtn = document.querySelector('.language-btn');
+    if (languageBtn) {
+        languageBtn.textContent = {
+            russian: 'Выбрать язык',
+            english: 'Select language',
+            tajik: 'интихоби забон'
+        }[currentLang] || 'Выбрать язык';
+        }
+    });
+
+</script>
+</html>

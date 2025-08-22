@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Профиль пользователя</title>
+    <script src="js/scriptjs.js" ></script>
+    <link rel="icon" href="icons/fire_icon.jpeg" type="image/jpeg">
+    
+    <!-- Floating Menu CSS -->
+    <link rel="stylesheet" href="styles/floating-menu.css">
+    
+    <!-- Notification System CSS -->
+    <style>
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.4s ease;
+            max-width: 350px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background-color: #2ecc71;
+            border-left: 5px solid #27ae60;
+        }
+        
+        .notification.error {
+            background-color: #e74c3c;
+            border-left: 5px solid #c0392b;
+        }
+        
+        .notification.warning {
+            background-color: #f39c12;
+            border-left: 5px solid #d35400;
+        }
+        
+        .notification.info {
+            background-color: #3498db;
+            border-left: 5px solid #2980b9;
+        }
+    </style>
+    
+    <!-- Main Styles -->
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4fc3f7;
+            --accent-dark: #039be5;
+            --background-dark: #121212;
+            --background-medium: #1a1a1a;
+            --background-light: #242424;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+            --border-radius: 10px;
+            --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .profile-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+            background-color: var(--background-light);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+        
+        .avatar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 220px;
+        }
+        
+        .avatar {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid var(--accent-color);
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+        
+        .avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(79, 195, 247, 0.5);
+        }
+        
+        .user-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .username {
+            font-size: 32px;
+            margin: 0 0 10px;
+            color: var(--accent-color);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        .user-stats {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background-color: var(--background-medium);
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 120px;
+            transition: var(--transition);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            background-color: rgba(79, 195, 247, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .profile-details {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+        
+        .profile-detail {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            min-width: 150px;
+            color: var(--text-secondary);
+        }
+        
+        .detail-value {
+            color: var(--text-primary);
+        }
+        
+        .profile-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn i {
+            font-size: 18px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(74, 111, 165, 0.4);
+        }
+        
+        .btn-danger {
+            background-color: var(--error-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(244, 67, 54, 0.4);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-secondary {
+            background-color: var(--background-medium);
+            color: var(--text-primary);
+            border: 1px solid var(--text-secondary);
+        }
+        
+        .btn-accent {
+            background-color: var(--accent-dark);
+            color: white;
+            box-shadow: 0 4px 10px rgba(3, 155, 229, 0.4);
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .profile-sections {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .section {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--background-light);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .section-title {
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--accent-color);
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--background-medium);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            font-size: 26px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--background-medium);
+            border: 1px solid var(--text-secondary);
+            border-radius: var(--border-radius);
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
+        }
+        
+        .friends-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .friends-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .friends-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        
+        .friend-card {
+            background-color: var(--background-medium);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: var(--transition);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .friend-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            background-color: rgba(79, 195, 247, 0.05);
+        }
+        
+        .friend-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-color);
+        }
+        
+        .friend-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .friend-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .friend-login {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .friend-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .friend-action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--background-light);
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .friend-action-btn:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .friend-action-btn.remove:hover {
+            background-color: var(--error-color);
+        }
+        
+        .language-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 10px 20px;
+            background-color: var(--accent-dark);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .language-list {
+            display: none;
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background-color: var(--background-light);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            min-width: 180px;
+        }
+        
+        .language-list.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .language-item {
+            list-style: none;
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+        
+        .language-item:hover {
+            background-color: var(--background-medium);
+        }
+        
+        .language-flag {
+            width: 24px;
+            height: 18px;
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .no-data-message {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: var(--background-medium);
+            margin: 25px 0;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .user-stats {
+                justify-content: center;
+            }
+            
+            .profile-actions {
+                justify-content: center;
+            }
+            
+            .profile-detail {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .detail-label {
+                min-width: auto;
+                margin-bottom: 5px;
+            }
+            
+            .section {
+                min-width: 100%;
+            }
+        }
+    </style>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+    
+    <div class="floating-menu-container">
+        <div class="floating-menu-button" id="floatingMenuButton">
+          <img src="icons/icon14.png" alt="Menu">
+        </div> 
+    <div id="floatingMenuContent" class="floating-menu-content">
+            <a href="profile?login={{ user_login }}" class="menu-item">
+          <img src="icons/icon8.png" alt="Profile">
+          <span id="menuProfileText">Мой профиль</span>
+        </a>
+        <a href="compete.html" class="menu-item">
+          <img src="icons/icon7.png" alt="Competition">
+          <span id="menuCompeteText">Соревнование</span>
+        </a>
+        <a href="index.html" class="menu-item">
+          <img src="icons/icon9.png" alt="Archive">
+          <span id="menuArchiveText">Архив задач</span>
+        </a>
+        <a href="news.html" class="menu-item">
+          <img src="icons/icon10.png" alt="News">
+          <span id="menuNewsText">Новости</span>
+        </a>
+        <a href="submission.html" class="menu-item">
+          <img src="icons/icon11.png" alt="Submissions">
+          <span id="menuSubmissionsText">Мои посылки</span>
+        </a>
+        <a href="#" class="menu-item" onclick="openAbout()">
+          <img src="icons/icon15.png" alt="About">
+          <span id="menuAboutText">О нас</span>
+        </a>
+        <a href="#" class="menu-item" onclick="logout()">
+          <img src="icons/icon12.png" alt="Logout">
+          <span id="menuLogoutText">Выход</span>
+        </a>
+      </div>
+    </div>
+    <!-- Language Selector -->
+    <button onclick="toggleLanguageList()" class="language-btn" id="langBtn">
+        <i class="fas fa-globe"></i>
+        <span id="langBtnText">Язык</span>
+    </button>
+    <ul id="languageList" class="language-list">
+        <li class="language-item" onclick="changeLanguage('english')">
+            <img src="icons/english_flag.png" class="language-flag" alt="English">
+            English
+        </li>
+        <li class="language-item" onclick="changeLanguage('russian')">
+            <img src="icons/russian_flag.png" class="language-flag" alt="Russian">
+            Русский
+        </li>
+        <li class="language-item" onclick="changeLanguage('tajik')">
+            <img src="icons/tajik_flag.png" class="language-flag" alt="Tajik">
+            Тоҷикӣ
+        </li>
+    </ul>
+
+    <div class="container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="avatar-section">
+                <img id="userAvatar" src="static/default_avatar.png" class="avatar" alt="Profile Picture">
+                <h1 class="username" id="usernameDisplay">...</h1>
+                <div class="profile-actions" id="profileActions">
+                    <!-- Actions will be filled dynamically -->
+                </div>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="solvedTasks">0</span>
+                        <span class="stat-label" id="solvedLabel">Решено задач</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="friendsCount">0</span>
+                        <span class="stat-label" id="friendsLabel">Друзей</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="ratingValue">0</span>
+                        <span class="stat-label" id="ratingLabel">Рейтинг</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="submissionsCount">0</span>
+                        <span class="stat-label" id="submissionsLabel">Посылок</span>
+                    </div>
+                </div>
+                
+                <div class="profile-details">
+                    <div class="profile-detail">
+                        <span class="detail-label" id="loginLabel">Логин:</span>
+                        <span class="detail-value" id="userLogin">...</span>
+                    </div>
+                    <div class="profile-detail">
+                        <span class="detail-label" id="registerDateLabel">Дата регистрации:</span>
+                        <span class="detail-value" id="registerDate">...</span>
+                    </div>
+                    <div class="profile-detail">
+                        <span class="detail-label" id="lastActiveLabel">Последняя активность:</span>
+                        <span class="detail-value" id="lastActive">...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Sections -->
+        <div class="profile-sections">
+            <!-- Edit Profile Section (visible only for own profile) -->
+            <div class="section" id="editProfileSection">
+                <h2 class="section-title">
+                    <i class="fas fa-user-edit"></i>
+                    <span id="editProfileTitle">Редактировать профиль</span>
+                </h2>
+                <form id="changeNameForm">
+                    <div class="form-group">
+                        <label for="newUserName" class="form-label" id="nameLabel">Имя пользователя:</label>
+                        <input type="text" id="newUserName" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="saveNameBtn">
+                        <i class="fas fa-save"></i>
+                        <span>Сохранить</span>
+                    </button>
+                </form>
+                
+                <div class="divider"></div>
+                
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label for="currentPassword" class="form-label" id="currentPasswordLabel">Текущий пароль:</label>
+                        <input type="password" id="currentPassword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword" class="form-label" id="passwordLabel">Новый пароль:</label>
+                        <input type="password" id="newPassword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label" id="confirmPasswordLabel">Подтвердите пароль:</label>
+                        <input type="password" id="confirmPassword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="showPassword"> 
+                            <span id="showPasswordLabel">Показать пароль</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="savePasswordBtn">
+                        <i class="fas fa-key"></i>
+                        <span>Изменить пароль</span>
+                    </button>
+                </form>
+                
+                <div class="divider"></div>
+                
+                <div class="form-group">
+                    <label class="form-label" id="avatarLabel">Сменить аватар:</label>
+                    <input type="file" id="avatarUpload" accept="image/*" class="form-control">
+                    <small id="avatarHelp" class="form-text">Макс. размер: 2MB</small>
+                    <button class="btn btn-accent" id="uploadAvatarBtn" style="margin-top: 15px;">
+                        <i class="fas fa-upload"></i>
+                        <span id="uploadAvatarText">Загрузить аватар</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Friends Section -->
+            <div class="section">
+                <div class="friends-container">
+                    <div class="friends-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-user-friends"></i>
+                            <span id="friendsSectionTitle">Друзья</span>
+                        </h2>
+                        <div id="friendsActions">
+                            <button class="btn btn-secondary" id="manageFriendsBtn" style="display: none;">
+                                <i class="fas fa-cog"></i>
+                                <span>Управление друзьями</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="friendsList" class="friends-list">
+                        <div class="no-data-message" id="noFriendsMessage">Загрузка списка друзей...</div>
+                    </div>
+                    
+                    <!-- Add Friend Form (visible when viewing other profiles) -->
+                    <div id="addFriendSection" style="display: none; margin-top: 20px;">
+                        <form id="addFriendForm">
+                            <button type="submit" class="btn btn-success" id="addFriendBtn">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Добавить в друзья</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/floating-menu.js" defer></script>
+    <script>
+        // ======================
+        // GLOBAL STATE & CONFIG
+        // ======================
+        const appState = {
+            currentUser: null,
+            viewedUser: null,
+            isOwnProfile: false,
+            currentLanguage: 'russian',
+            friends: []
+        };
+
+        // Internationalization
+        const i18n = {
+            english: {
+                pageTitle: "User Profile",
+                solvedLabel: "Solved problems",
+                friendsLabel: "Friends",
+                ratingLabel: "Rating",
+                submissionsLabel: "Submissions",
+                loginLabel: "Login:",
+                registerDateLabel: "Registration date:",
+                lastActiveLabel: "Last active:",
+                editProfileTitle: "Edit Profile",
+                nameLabel: "Username:",
+                saveNameBtn: "Save",
+                currentPasswordLabel: "Current password:",
+                passwordLabel: "New password:",
+                confirmPasswordLabel: "Confirm password:",
+                showPasswordLabel: "Show password",
+                savePasswordBtn: "Change password",
+                avatarLabel: "Change avatar:",
+                uploadAvatarText: "Upload Avatar",
+                friendsSectionTitle: "Friends",
+                manageFriendsBtn: "Manage Friends",
+                addFriendBtn: "Add Friend",
+                removeFriendBtn: "Remove Friend",
+                noFriendsMessage: "No friends yet",
+                yourProfile: "Your Profile",
+                viewSubmissions: "View Submissions",
+                changeAvatar: "Change Avatar",
+                logout: "Logout",
+                menuProfileText: "My Profile",
+                menuCompeteText: "Competition",
+                menuArchiveText: "Problem Archive",
+                menuNewsText: "News",
+                menuSubmissionsText: "My Submissions",
+                menuAboutText: "About",
+                menuLogoutText: "Logout",
+                langBtnText: "Language",
+                friendRequestSent: "Friend request sent!",
+                friendRemoved: "Friend removed successfully",
+                passwordChanged: "Password changed successfully",
+                nameChanged: "Name changed successfully",
+                avatarChanged: "Avatar changed successfully",
+                passwordMismatch: "Passwords don't match",
+                passwordMinLength: "Password must be at least 8 characters",
+                currentPasswordRequired: "Current password is required",
+                friendRequestError: "Error sending friend request",
+                friendRemoveError: "Error removing friend",
+                profileLoadError: "Error loading profile data",
+                confirmRemoveFriend: "Are you sure you want to remove this friend?",
+                confirmLogout: "Are you sure you want to logout?"
+            },
+            russian: {
+                pageTitle: "Профиль пользователя",
+                solvedLabel: "Решено задач",
+                friendsLabel: "Друзей",
+                ratingLabel: "Рейтинг",
+                submissionsLabel: "Посылок",
+                loginLabel: "Логин:",
+                registerDateLabel: "Дата регистрации:",
+                lastActiveLabel: "Последняя активность:",
+                editProfileTitle: "Редактировать профиль",
+                nameLabel: "Имя пользователя:",
+                saveNameBtn: "Сохранить",
+                currentPasswordLabel: "Текущий пароль:",
+                passwordLabel: "Новый пароль:",
+                confirmPasswordLabel: "Подтвердите пароль:",
+                showPasswordLabel: "Показать пароль",
+                savePasswordBtn: "Изменить пароль",
+                avatarLabel: "Сменить аватар:",
+                uploadAvatarText: "Загрузить аватар",
+                friendsSectionTitle: "Друзья",
+                manageFriendsBtn: "Управление друзьями",
+                addFriendBtn: "Добавить в друзья",
+                removeFriendBtn: "Удалить из друзей",
+                noFriendsMessage: "Пока нет друзей",
+                yourProfile: "Ваш профиль",
+                viewSubmissions: "Мои посылки",
+                changeAvatar: "Сменить аватар",
+                logout: "Выход",
+                menuProfileText: "Мой профиль",
+                menuCompeteText: "Соревнование",
+                menuArchiveText: "Архив задач",
+                menuNewsText: "Новости",
+                menuSubmissionsText: "Мои посылки",
+                menuAboutText: "О нас",
+                menuLogoutText: "Выход",
+                langBtnText: "Язык",
+                friendRequestSent: "Запрос на дружбу отправлен!",
+                friendRemoved: "Друг успешно удалён",
+                passwordChanged: "Пароль успешно изменён",
+                nameChanged: "Имя успешно изменено",
+                avatarChanged: "Аватар успешно изменён",
+                passwordMismatch: "Пароли не совпадают",
+                passwordMinLength: "Пароль должен содержать минимум 8 символов",
+                currentPasswordRequired: "Требуется текущий пароль",
+                friendRequestError: "Ошибка отправки запроса на дружбу",
+                friendRemoveError: "Ошибка удаления друга",
+                profileLoadError: "Ошибка загрузки данных профиля",
+                confirmRemoveFriend: "Вы уверены, что хотите удалить этого друга?",
+                confirmLogout: "Вы уверены, что хотите выйти?"
+            },
+            tajik: {
+                pageTitle: "Профили корбар",
+                solvedLabel: "Масъалаҳо ҳал шуданд",
+                friendsLabel: "Дӯстон",
+                ratingLabel: "Рейтинг",
+                submissionsLabel: "Фиристодаҳо",
+                loginLabel: "Логин:",
+                registerDateLabel: "Санаи бақайдгирӣ:",
+                lastActiveLabel: "Фаъолияти охирин:",
+                editProfileTitle: "Таҳрири профил",
+                nameLabel: "Номи корбар:",
+                saveNameBtn: "Захира кардан",
+                currentPasswordLabel: "Рамзи ҳозира:",
+                passwordLabel: "Рамзи нав:",
+                confirmPasswordLabel: "Тасдиқи рамз:",
+                showPasswordLabel: "Нишон додани рамз",
+                savePasswordBtn: "Тағйири рамз",
+                avatarLabel: "Ивази акс:",
+                uploadAvatarText: "Боргузории акс",
+                friendsSectionTitle: "Дӯстон",
+                manageFriendsBtn: "Идоракунии дӯстон",
+                addFriendBtn: "Илова кардан ба дӯстон",
+                removeFriendBtn: "Ҳазф кардан аз дӯстон",
+                noFriendsMessage: "То ҳол дӯстон нест",
+                yourProfile: "Профили шумо",
+                viewSubmissions: "Посилкаҳои ман",
+                changeAvatar: "Ивази акс",
+                logout: "Баромад",
+                menuProfileText: "Профили ман",
+                menuCompeteText: "Мусобиқа",
+                menuArchiveText: "Архиви масъалаҳо",
+                menuNewsText: "Ахбор",
+                menuSubmissionsText: "Посилкаҳои ман",
+                menuAboutText: "Дар бораи мо",
+                menuLogoutText: "Баромад",
+                langBtnText: "Забон",
+                friendRequestSent: "Дархости дӯстӣ фиристода шуд!",
+                friendRemoved: "Дӯст бомуваффақият ҳазф карда шуд",
+                passwordChanged: "Рамз бомуваффақият иваз карда шуд",
+                nameChanged: "Ном бомуваффақият иваз карда шуд",
+                avatarChanged: "Акс бомуваффақият иваз карда шуд",
+                passwordMismatch: "Рамзҳо мувофиқат намекунанд",
+                passwordMinLength: "Рамз бояд ҳадди ақал 8 аломат дошта бошад",
+                currentPasswordRequired: "Рамзи ҳозира лозим аст",
+                friendRequestError: "Хатоги дар фиристодани дархости дӯстӣ",
+                friendRemoveError: "Хатоги дар ҳазфи дӯст",
+                profileLoadError: "Хатоги дар боргирии маълумоти профил",
+                confirmRemoveFriend: "Оё шумо мутмаин ҳастед, ки мехоҳед ин дӯстро ҳазф кунед?",
+                confirmLogout: "Оё шумо мутмаин ҳастед, ки мехоҳед аз система баромаед?"
+            }
+        };
+
+        // =================
+        // UTILITY FUNCTIONS
+        // =================
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = message;
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    container.removeChild(notification);
+                }, 400);
+            }, 5000);
+        }
+
+        function getCurrentLanguage() {
+            const match = document.cookie.match(/(?:^|; )language=([^;]+)/);
+            return match ? decodeURIComponent(match[1]) : 'russian';
+        }
+
+        function applyLanguage(lang) {
+            appState.currentLanguage = lang;
+            document.documentElement.lang = lang === 'tajik' ? 'tg' : lang.substring(0, 2);
+            
+            Object.keys(i18n[lang]).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.textContent = i18n[lang][key];
+                }
+            });
+        }
+
+        function toggleLanguageList() {
+            const list = document.getElementById('languageList');
+            list.classList.toggle('show');
+        }
+
+        function closeLanguageList(e) {
+            const langList = document.getElementById('languageList');
+            const langBtn = document.getElementById('langBtn');
+            
+            if (langList.classList.contains('show') && 
+                !langList.contains(e.target) && 
+                e.target !== langBtn) {
+                langList.classList.remove('show');
+            }
+        }
+
+        // =======================
+        // PROFILE DATA MANAGEMENT
+        // =======================
+        async function loadProfileData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const profileLogin = urlParams.get('login');
+            const profileUrl = `/api/profile?login=` + profileLogin;
+            const profileResponse = await fetch(profileUrl);
+            
+            if (profileResponse.status === 404) {
+                showNotification('Пользователь не найден', 'error');
+                return;
+            }
+            
+            if (!profileResponse.ok) throw new Error('Failed to load profile');
+            
+            if (!appState.isOwnProfile) {
+                checkFriendshipStatus();
+            }
+            try {
+                // Get current user
+                const currentUserResponse = await fetch('/get_login');
+                if (!currentUserResponse.ok) throw new Error('Failed to get current user');
+                appState.currentUser = await currentUserResponse.json();
+                
+                // Determine if we're viewing own profile
+                appState.isOwnProfile = !profileLogin || profileLogin === appState.currentUser.login;
+                appState.viewedUser = appState.isOwnProfile ? appState.currentUser : { login: profileLogin };
+                
+                // Load profile info
+                const profileUrl = `/api/profile?login=${appState.viewedUser.login}`;
+                const profileResponse = await fetch(profileUrl);
+                if (!profileResponse.ok) throw new Error('Failed to load profile');
+                appState.viewedUser = await profileResponse.json();
+                
+                // Update UI
+                updateProfileUI();
+                
+                // Load friends
+                loadFriends();
+                
+            } catch (error) {
+                console.error('Error loading profile data:', error);
+                showNotification(i18n[appState.currentLanguage].profileLoadError, 'error');
+            }
+            loadFriends();
+        }
+
+        function updateProfileUI() {
+            const user = appState.viewedUser;
+            document.getElementById('usernameDisplay').textContent = user.username || user.login;
+            document.getElementById('userLogin').textContent = user.login;
+            document.getElementById('solvedTasks').textContent = user.solved_problems || 0;
+            document.getElementById('friendsCount').textContent = user.friends_count || 0;
+            document.getElementById('ratingValue').textContent = user.rating || 0;
+            document.getElementById('submissionsCount').textContent = user.submissions_count || 0;
+            document.getElementById('registerDate').textContent = user.register_date || 'N/A';
+            document.getElementById('lastActive').textContent = user.last_active || 'N/A';
+            
+            if (user.avatar_url) {
+                document.getElementById('userAvatar').src = user.avatar_url;
+            }
+            
+            // Show/hide edit section
+            document.getElementById('editProfileSection').style.display = 
+                appState.isOwnProfile ? 'block' : 'none';
+            
+            // Set up profile actions
+            const profileActions = document.getElementById('profileActions');
+            profileActions.innerHTML = '';
+            
+            if (appState.isOwnProfile) {
+                // Own profile actions
+                const actions = [
+                    { 
+                        text: i18n[appState.currentLanguage].yourProfile, 
+                        class: 'btn-secondary', 
+                        icon: 'fa-user',
+                        onclick: null 
+                    },
+                    { 
+                        text: i18n[appState.currentLanguage].viewSubmissions, 
+                        class: 'btn-primary', 
+                        icon: 'fa-list',
+                        onclick: `window.location.href='my_submit.html?user=${user.login}'` 
+                    },
+                    { 
+                        text: i18n[appState.currentLanguage].changeAvatar, 
+                        class: 'btn-accent', 
+                        icon: 'fa-camera',
+                        onclick: 'document.getElementById("avatarUpload").click()' 
+                    },
+                    { 
+                        text: i18n[appState.currentLanguage].logout, 
+                        class: 'btn-danger', 
+                        icon: 'fa-sign-out-alt',
+                        onclick: 'logout()' 
+                    }
+                ];
+                
+                actions.forEach(action => {
+                    const button = document.createElement('button');
+                    button.className = `btn ${action.class}`;
+                    button.innerHTML = `<i class="fas ${action.icon}"></i> <span>${action.text}</span>`;
+                    if (action.onclick) {
+                        button.onclick = new Function(action.onclick);
+                    }
+                    profileActions.appendChild(button);
+                });
+                
+                document.getElementById('newUserName').value = user.username || '';
+                document.getElementById('manageFriendsBtn').style.display = 'block';
+            } else {
+                // Other profile actions
+                const addFriendBtn = document.createElement('button');
+                addFriendBtn.className = 'btn btn-success';
+                addFriendBtn.id = 'addFriendActionBtn';
+                addFriendBtn.innerHTML = `<i class="fas fa-user-plus"></i> <span>${i18n[appState.currentLanguage].addFriendBtn}</span>`;
+                addFriendBtn.onclick = addFriend;
+                profileActions.appendChild(addFriendBtn);
+                
+                // Check if already friends
+                checkFriendshipStatus();
+            }
+        }
+
+        async function loadFriends() {
+            try {
+                const friendsUrl = `/friends?login=${appState.viewedUser.login}`;
+                const response = await fetch(friendsUrl);
+                if (!response.ok) throw new Error('Failed to load friends');
+                appState.friends = await response.json();
+                
+                renderFriendsList();
+            } catch (error) {
+                console.error('Error loading friends:', error);
+                showNotification(i18n[appState.currentLanguage].friendRequestError, 'error');
+                
+                // Добавляем обработку ошибки в UI
+                const noFriendsMessage = document.getElementById('noFriendsMessage');
+                if (noFriendsMessage) {
+                    noFriendsMessage.textContent = i18n[appState.currentLanguage].friendRequestError;
+                }
+            }
+        }
+
+        function renderFriendsList() {
+            const friendsList = document.getElementById('friendsList');
+            const noFriendsMessage = document.getElementById('noFriendsMessage');
+            
+            // Проверяем существование элементов перед работой с ними
+            if (!friendsList || !noFriendsMessage) return;
+            
+            // Очищаем список
+            friendsList.innerHTML = '';
+            
+            if (appState.friends.length === 0) {
+                noFriendsMessage.textContent = i18n[appState.currentLanguage].noFriendsMessage;
+                noFriendsMessage.style.display = 'block';
+            } else {
+                noFriendsMessage.style.display = 'none';
+                
+                appState.friends.forEach(friend => {
+                    const friendCard = document.createElement('div');
+                    friendCard.className = 'friend-card';
+                    
+                    friendCard.innerHTML = `
+                        <img src="${friend.avatar_url || 'static/default_avatar.png'}" 
+                            class="friend-avatar" 
+                            alt="${friend.username || friend.login}"
+                            onclick="window.location.href='profile?login=${friend.login}'">
+                        <div class="friend-info" 
+                            onclick="window.location.href='profile?login=${friend.login}'">
+                            <div class="friend-name">${friend.username || friend.login}</div>
+                            <div class="friend-login">${friend.login}</div>
+                        </div>
+                    `;
+                    
+                    if (appState.isOwnProfile) {
+                        const actions = document.createElement('div');
+                        actions.className = 'friend-actions';
+                        
+                        actions.innerHTML = `
+                            <button class="friend-action-btn remove" 
+                                    title="${i18n[appState.currentLanguage].removeFriendBtn}"
+                                    onclick="removeFriend('${friend.login}')">
+                                <i class="fas fa-user-minus"></i>
+                            </button>
+                        `;
+                        
+                        friendCard.appendChild(actions);
+                    }
+                    
+                    friendsList.appendChild(friendCard);
+                });
+            }
+        }
+
+      // ====================
+// FRIENDSHIP MANAGEMENT (односторонняя система)
+// ====================
+
+    // Проверка статуса подписки
+    async function checkFriendshipStatus() {
+        if (!appState.currentUser || appState.isOwnProfile) return;
+        
+        try {
+            const response = await fetch(
+                `/friends_status?user=${appState.currentUser.login}&friend=${appState.viewedUser.login}`
+            );
+            const status = await response.json();
+            
+            const addFriendBtn = document.getElementById('addFriendActionBtn');
+            if (!addFriendBtn) return;
+            
+            if (status.is_friend) {
+                addFriendBtn.innerHTML = `<i class="fas fa-user-minus"></i> ${i18n[appState.currentLanguage].removeFriendBtn}`;
+                addFriendBtn.classList.remove('btn-success');
+                addFriendBtn.classList.add('btn-danger');
+                addFriendBtn.onclick = () => removeFriend();
+            } else {
+                addFriendBtn.innerHTML = `<i class="fas fa-user-plus"></i> ${i18n[appState.currentLanguage].addFriendBtn}`;
+                addFriendBtn.classList.remove('btn-danger');
+                addFriendBtn.classList.add('btn-success');
+                addFriendBtn.onclick = () => addFriend();
+            }
+        } catch (error) {
+            console.error('Error checking friendship status:', error);
+        }
+    }
+
+    // Добавление в друзья (подписка)
+    async function addFriend() {
+        try {
+            const response = await fetch('/friends_add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    friend_login: appState.viewedUser.login
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                showNotification(i18n[appState.currentLanguage].friendRequestSent, 'success');
+                checkFriendshipStatus();
+                
+                // Обновляем счетчик друзей только для текущего пользователя
+                if (appState.isOwnProfile) {
+                    loadProfileData();
+                }
+            } else {
+                showNotification(result.error || i18n[appState.currentLanguage].friendRequestError, 'error');
+            }
+        } catch (error) {
+            console.error('Error adding friend:', error);
+            showNotification(i18n[appState.currentLanguage].friendRequestError, 'error');
+        }
+    }
+
+    // Удаление из друзей (отписка)
+    async function removeFriend(friendLogin = null) {
+        const loginToRemove = friendLogin || appState.viewedUser.login;
+        
+        if (!confirm(i18n[appState.currentLanguage].confirmRemoveFriend)) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/friends_remove', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    friend_login: loginToRemove
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                showNotification(i18n[appState.currentLanguage].friendRemoved, 'success');
+                
+                // Обновление UI
+                if (friendLogin) {
+                    // Удалили конкретного друга - перезагружаем список
+                    loadFriends();
+                } else {
+                    // Удалили текущего пользователя (со страницы профиля)
+                    checkFriendshipStatus();
+                }
+                
+                // Обновляем счетчик друзей
+                if (appState.isOwnProfile || !friendLogin) {
+                    loadProfileData();
+                }
+            } else {
+                showNotification(result.error || i18n[appState.currentLanguage].friendRemoveError, 'error');
+            }
+        } catch (error) {
+            console.error('Error removing friend:', error);
+            showNotification(i18n[appState.currentLanguage].friendRemoveError, 'error');
+        }
+    }
+        // ====================
+        // PROFILE EDITING
+        // ====================
+        async function changeUserName() {
+            const newName = document.getElementById('newUserName').value.trim();
+            if (!newName) return;
+            
+            try {
+                const response = await fetch('/change_name', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newUserName: newName })
+                });
+                
+                if (!response.ok) throw new Error('Failed to change name');
+                
+                const data = await response.json();
+                if (data.message) {
+                    showNotification(i18n[appState.currentLanguage].nameChanged, 'success');
+                    document.getElementById('usernameDisplay').textContent = newName;
+                    if (appState.isOwnProfile) {
+                        appState.currentUser.username = newName;
+                    }
+                }
+            } catch (error) {
+                console.error('Error changing name:', error);
+                showNotification(i18n[appState.currentLanguage].errorChangingName, 'error');
+            }
+        }
+
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Validation
+            if (!currentPassword) {
+                showNotification(i18n[appState.currentLanguage].currentPasswordRequired, 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showNotification(i18n[appState.currentLanguage].passwordMismatch, 'error');
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                showNotification(i18n[appState.currentLanguage].passwordMinLength, 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/change_password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        currentPassword, 
+                        newPassword 
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Failed to change password');
+                
+                const data = await response.json();
+                if (data.message) {
+                    showNotification(i18n[appState.currentLanguage].passwordChanged, 'success');
+                    // Clear password fields
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                }
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showNotification(i18n[appState.currentLanguage].errorChangingPassword, 'error');
+            }
+        }
+
+        async function uploadAvatar() {
+            const fileInput = document.getElementById('avatarUpload');
+            const file = fileInput.files[0];
+            
+            const formData = new FormData();
+            formData.append('avatar', file);
+            
+            const response = await fetch('/upload_avatar', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                document.getElementById('userAvatar').src = result.avatar_url;
+                showNotification('Аватар успешно обновлён', 'success');
+            }
+        }
+
+
+        // ====================
+        // EVENT HANDLERS
+        // ====================
+        function changeLanguage(lang) {
+            document.cookie = `language=${encodeURIComponent(lang)}; path=/; max-age=31536000`;
+            applyLanguage(lang);
+            loadProfileData();
+            toggleLanguageList();
+        }
+
+        function logout() {
+            if (confirm(i18n[appState.currentLanguage].confirmLogout)) {
+                window.location.href = '/logout';
+            }
+        }
+
+        function openAbout() {
+            alert(i18n[appState.currentLanguage].menuAboutText);
+        }
+
+        // ====================
+        // INITIALIZATION
+        // ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply language
+            const lang = getCurrentLanguage();
+            applyLanguage(lang);
+            
+            // Set up event listeners
+            document.getElementById('changeNameForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                changeUserName();
+            });
+            
+            document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                changePassword();
+            });
+            
+            document.getElementById('showPassword').addEventListener('change', function() {
+                const passwordField = document.getElementById('newPassword');
+                const confirmField = document.getElementById('confirmPassword');
+                passwordField.type = this.checked ? 'text' : 'password';
+                confirmField.type = this.checked ? 'text' : 'password';
+            });
+            
+            document.getElementById('uploadAvatarBtn').addEventListener('click', uploadAvatar);
+            document.addEventListener('click', closeLanguageList);
+            
+            // Load profile data
+            loadProfileData();
+        });
+    </script>
+</body>
+</html>

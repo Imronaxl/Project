@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="mul">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача - Tajik Fire</title>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/rust/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/go/go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/pascal/pascal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1e1e1e;
+            --text-light: #f0f0f0;
+            --text-muted: #aaa;
+            --accent: #4da6ff;
+            --success: #4CAF50;
+            --danger: #f44336;
+            --warning: #ff9800;
+            --learning-primary: #4361ee;
+            --editor-bg: #2d2d2d;
+            --border: #444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr auto auto;
+            height: 100vh;
+            grid-template-areas:
+                "header header"
+                "description editor"
+                "examples solutions"
+                "submissions submissions";
+            gap: 15px;
+            padding: 15px;
+            overflow: hidden;
+        }
+        
+        @media (max-width: 1200px) {
+            body {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto auto;
+                grid-template-areas:
+                    "header"
+                    "description"
+                    "editor"
+                    "examples"
+                    "solutions"
+                    "submissions";
+                height: auto;
+                overflow: auto;
+            }
+        }
+        
+        .header {
+            grid-area: header;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .task-title-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .task-title {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .difficulty-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        .difficulty-easy {
+            background: #2e7d32;
+        }
+        
+        .difficulty-medium {
+            background: #ff9800;
+            color: #333;
+        }
+        
+        .difficulty-hard {
+            background: #f44336;
+        }
+        
+        .language-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .language-btn {
+            padding: 8px 15px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .language-btn:hover {
+            background-color: #444;
+            transform: translateY(-2px);
+        }
+        
+        .language-btn.active {
+            background-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(77, 166, 255, 0.5);
+        }
+        
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .card-content {
+            flex: 1;
+            overflow: auto;
+        }
+        
+        #description-card {
+            grid-area: description;
+        }
+        
+        #editor-card {
+            grid-area: editor;
+        }
+        
+        #examples-card {
+            grid-area: examples;
+        }
+        
+        #solutions-card {
+            grid-area: solutions;
+        }
+        
+        #submissions-card {
+            grid-area: submissions;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        pre {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            font-family: 'Consolas', monospace;
+            line-height: 1.5;
+            border-left: 4px solid var(--accent);
+            margin-top: 8px;
+        }
+        
+        .example-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .example-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .example-card {
+            background-color: #252525;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .editor-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .editor-control {
+            padding: 8px 15px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .editor-control:hover {
+            background-color: #444;
+        }
+        
+        .editor-control.run {
+            background-color: var(--success);
+        }
+        
+        .editor-control.submit {
+            background-color: var(--accent);
+        }
+        
+        .language-select {
+            padding: 8px 15px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 150px;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+        
+        .editor-wrapper {
+            flex: 1;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        .CodeMirror {
+            height: 100%;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .notification {
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            position: relative;
+            padding-left: 40px;
+        }
+        
+        .notification i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+        }
+        
+        .notification.success {
+            background-color: rgba(46, 125, 50, 0.2);
+            border-left: 4px solid #2e7d32;
+        }
+        
+        .notification.error {
+            background-color: rgba(244, 67, 54, 0.2);
+            border-left: 4px solid var(--danger);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .copy-btn {
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover {
+            background-color: #666;
+        }
+
+        .example-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .example-title {
+            font-size: 15px;
+        }
+        
+        .topic-link {
+            color: var(--learning-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            transition: color 0.3s;
+        }
+        
+        .topic-link:hover {
+            color: #5a75f0;
+            text-decoration: underline;
+        }
+        
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .solution-card {
+            background-color: #252525;
+            border-radius: 6px;
+            padding: 15px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+        
+        .solution-card:hover {
+            border-color: var(--accent);
+        }
+        
+        .solution-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .solution-title {
+            font-weight: 600;
+            color: var(--accent);
+        }
+        
+        .solution-lang {
+            font-size: 12px;
+            background: #333;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        
+        .solution-code {
+            max-height: 200px;
+            overflow: auto;
+        }
+        
+        .solution-code pre {
+            margin: 0;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        
+        .math-container {
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid var(--learning-primary);
+            overflow-x: auto;
+        }
+        
+        .output-container {
+            margin-top: 15px;
+            background: #252525;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Consolas', monospace;
+            max-height: 200px;
+            overflow: auto;
+        }
+        
+        .output-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+        
+        .output-content {
+            white-space: pre-wrap;
+        }
+        
+        .floating-menu-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .floating-menu-button {
+            background: var(--learning-primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .floating-menu-button:hover {
+            transform: scale(1.1);
+        }
+        
+        .floating-menu-content {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: none;
+            min-width: 200px;
+            z-index: 1001;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s;
+            gap: 12px;
+        }
+        
+        .menu-item:hover {
+            background-color: #2a2a2a;
+            color: var(--accent);
+        }
+        
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+        .file-upload-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .file-upload-btn {
+            padding: 8px 15px;
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .file-upload-btn:hover {
+            background-color: #5a75f0;
+            transform: translateY(-2px);
+        }
+        
+        .file-name {
+            font-size: 14px;
+            color: #aaa;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .file-size-error {
+            color: #f44336;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+        .submissions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .submissions-table th, .submissions-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+        
+        .submissions-table th {
+            background-color: #252525;
+            font-weight: 600;
+        }
+        
+        .submissions-table tr:hover {
+            background-color: #252525;
+        }
+        
+        .btn-view {
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn-view:hover {
+            background-color: #5a75f0;
+        }
+        
+        /* Стили для вердиктов */
+        .verdict {
+            font-weight: 500;
+        }
+        
+        .verdict.Accepted {
+            color: #4CAF50;
+        }
+        
+        .verdict.Wrong {
+            color: #f44336;
+        }
+        
+        .verdict.Compilation, .verdict.Runtime, .verdict.Time, .verdict.Memory {
+            color: #ff9800;
+        }
+        
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        .modal-content {
+            background-color: var(--bg-card);
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-body {
+            flex: 1;
+            overflow: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: white;
+        }
+        
+        .placeholder-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+        
+        .placeholder-content i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="floating-menu-container">
+        <div class="floating-menu-button" id="floatingMenuButton">
+            <i class="fas fa-bars"></i>
+        </div>
+        <div id="floatingMenuContent" class="floating-menu-content">
+            <a href="profile.html" class="menu-item">
+                <i class="fas fa-user"></i>
+                <span id="menuProfileText">Мой профиль</span>
+            </a>
+            <a href="compete.html" class="menu-item">
+                <i class="fas fa-trophy"></i>
+                <span id="menuCompeteText">Соревнование</span>
+            </a>
+            <a href="index.html" class="menu-item">
+                <i class="fas fa-archive"></i>
+                <span id="menuArchiveText">Архив задач</span>
+            </a>
+            <a href="submission.html" class="menu-item">
+                <i class="fas fa-list"></i>
+                <span id="menuSubmissionsText">Мои посылки</span>
+            </a>
+            <a href="learning.html" class="menu-item">
+                <i class="fas fa-graduation-cap"></i>
+                <span id="menuLearningText">Обучение</span>
+            </a>
+            <a href="#" class="menu-item" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span id="menuLogoutText">Выход</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="header">
+        <div class="task-title-container">
+            <div class="task-title" id="taskTitle">
+                <i class="fas fa-tasks"></i>
+                <span>Загрузка задачи...</span>
+            </div>
+            <div class="task-meta">
+                <div class="meta-item" id="taskTopic">
+                    <i class="fas fa-book"></i>
+                    <span>Тема: Загрузка...</span>
+                </div>
+                <div class="meta-item" id="taskDifficulty">
+                    <i class="fas fa-star"></i>
+                    <span>Сложность: </span>
+                    <span class="difficulty-badge">-</span>
+                </div>
+                <div class="meta-item" id="taskTime">
+                    <i class="fas fa-clock"></i>
+                    <span>Время: -</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="language-selector">
+            <button class="language-btn" id="lang-ru" onclick="changeLanguage('ru')">
+                <i class="fas fa-language"></i> Русский
+            </button>
+            <button class="language-btn" id="lang-en" onclick="changeLanguage('en')">
+                <i class="fas fa-language"></i> English
+            </button>
+            <button class="language-btn" id="lang-tj" onclick="changeLanguage('tj')">
+                <i class="fas fa-language"></i> Тоҷикӣ
+            </button>
+        </div>
+    </div>
+
+    <div class="card" id="description-card">
+        <div class="card-title">
+            <i class="fas fa-file-alt"></i>
+            <span id="conditionTitle">Условие задачи</span>
+        </div>
+        <div class="card-content" id="condition-content">
+            <div class="placeholder-content">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Загрузка условия задачи...</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card" id="editor-card">
+        <div class="card-title">
+            <i class="fas fa-code"></i>
+            <span id="editorTitle">Редактор кода</span>
+        </div>
+        <div class="editor-container">
+            <div class="editor-header">
+                <select id="languageSelect" class="language-select">
+                    <option value="cpp">C++</option>
+                    <option value="python">Python</option>
+                    <option value="java">Java</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="csharp">C#</option>
+                    <option value="pascal">Pascal</option>
+                    <option value="go">Go</option>
+                    <option value="rust">Rust</option>
+                </select>
+                
+                <div class="editor-controls">
+                    <button class="editor-control submit" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        <span id="submitBtnText">Отправить</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="editor-wrapper">
+                <textarea id="codeEditor"></textarea>
+            </div>
+            
+            <div class="file-upload-container">
+                <input type="file" id="fileInput" accept=".cpp,.py,.java,.js,.cs,.pas,.go,.rs" style="display: none">
+                <button class="file-upload-btn" id="fileUploadBtn">
+                    <i class="fas fa-file-upload"></i>
+                    <span id="fileBtnText">Выбрать файл</span>
+                </button>
+                <span class="file-name" id="fileName">Файл не выбран</span>
+            </div>
+            <div class="file-size-error" id="fileSizeError">
+                Файл слишком большой! Максимальный размер: 5 МБ
+            </div>
+        </div>
+    </div>
+    
+    <div class="card" id="examples-card">
+        <div class="card-title">
+            <i class="fas fa-table"></i>
+            <span id="examplesTitle">Примеры</span>
+        </div>
+        <div class="card-content" id="examples-container">
+            <div class="placeholder-content">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Загрузка примеров...</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card" id="solutions-card">
+        <div class="card-title">
+            <i class="fas fa-lightbulb"></i>
+            <span id="solutionsTitle">Примеры решений</span>
+        </div>
+        <div class="card-content" id="solutions-container">
+            <div class="placeholder-content">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Загрузка решений...</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card" id="submissions-card">
+        <div class="card-title">
+            <i class="fas fa-history"></i>
+            <span id="submissionsTitle">История посылок</span>
+        </div>
+        <div class="card-content" id="submissions-container">
+            <div class="placeholder-content">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Загрузка истории посылок...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="submissionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Код посылки #<span id="modalSubmissionId"></span></h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="modalCodeContainer"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let codeEditor = null;
+        let currentLanguage = 'cpp';
+        let currentTaskId = null;
+        let selectedFile = null;
+        
+        // Инициализация редактора
+        function initEditor() {
+            const textarea = document.getElementById('codeEditor');
+            codeEditor = CodeMirror.fromTextArea(textarea, {
+                mode: 'text/x-c++src',
+                theme: 'dracula',
+                lineNumbers: true,
+                indentUnit: 4,
+                indentWithTabs: false,
+                smartIndent: true,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                styleActiveLine: true,
+                lineWrapping: true,
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+                foldGutter: true,
+                extraKeys: {
+                    "Ctrl-Space": "autocomplete",
+                    "Tab": function(cm) {
+                        if (cm.somethingSelected()) {
+                            cm.indentSelection("add");
+                        } else {
+                            cm.replaceSelection("    ", "end");
+                        }
+                    },
+                    "Shift-Tab": function(cm) {
+                        cm.indentSelection("subtract");
+                    }
+                }
+            });
+            
+            // Установка начального кода
+            setStarterCode(currentLanguage);
+            
+            // Изменение языка
+            document.getElementById('languageSelect').addEventListener('change', function() {
+                currentLanguage = this.value;
+                setEditorMode(currentLanguage);
+                setStarterCode(currentLanguage);
+            });
+        }
+        
+        // Установка режима редактора в зависимости от языка
+        function setEditorMode(lang) {
+            let mode = '';
+            switch(lang) {
+                case 'cpp': mode = 'text/x-c++src'; break;
+                case 'python': mode = 'text/x-python'; break;
+                case 'java': mode = 'text/x-java'; break;
+                case 'javascript': mode = 'text/javascript'; break;
+                case 'csharp': mode = 'text/x-csharp'; break;
+                case 'pascal': mode = 'text/x-pascal'; break;
+                case 'go': mode = 'text/x-go'; break;
+                case 'rust': mode = 'text/x-rustsrc'; break;
+                default: mode = 'text/x-c++src';
+            }
+            codeEditor.setOption('mode', mode);
+        }
+        
+        // Установка стартового кода для языка
+        function setStarterCode(lang) {
+            let code = '';
+            switch(lang) {
+                case 'cpp':
+                    code = `#include <iostream>\nusing namespace std;\n\nint main() {\n    // Ваш код здесь\n    return 0;\n}`;
+                    break;
+                case 'python':
+                    code = `# Ваш код здесь\nprint("Hello World!")`;
+                    break;
+                case 'java':
+                    code = `public class Main {\n    public static void main(String[] args) {\n        // Ваш код здесь\n        System.out.println("Hello World!");\n    }\n}`;
+                    break;
+                case 'javascript':
+                    code = `// Ваш код здесь\nconsole.log("Hello World!");`;
+                    break;
+                case 'csharp':
+                    code = `using System;\n\nclass Program {\n    static void Main() {\n        // Ваш код здесь\n        Console.WriteLine("Hello World!");\n    }\n}`;
+                    break;
+                case 'pascal':
+                    code = `program HelloWorld;\nbegin\n    // Ваш код здесь\n    writeln('Hello World!');\nend.`;
+                    break;
+                case 'go':
+                    code = `package main\n\nimport "fmt"\n\nfunc main() {\n    // Ваш код здесь\n    fmt.Println("Hello World!")\n}`;
+                    break;
+                case 'rust':
+                    code = `fn main() {\n    // Ваш код здесь\n    println!("Hello World!");\n}`;
+                    break;
+            }
+            codeEditor.setValue(code);
+        }
+        
+        // Локализация
+        const i18n = {
+            ru: {
+                menuProfileText: "Мой профиль",
+                menuCompeteText: "Соревнование",
+                menuArchiveText: "Архив задач",
+                menuSubmissionsText: "Мои посылки",
+                menuLearningText: "Обучение",
+                menuLogoutText: "Выход",
+                taskTitle: "Задача",
+                conditionTitle: "Условие задачи",
+                examplesTitle: "Примеры",
+                noExamples: "Примеры отсутствуют",
+                solutionsTitle: "Примеры решений",
+                editorTitle: "Редактор кода",
+                runBtn: "Запустить",
+                submitBtn: "Отправить",
+                inputData: "Входные данные",
+                outputData: "Выходные данные",
+                copyBtn: "Копировать",
+                example: "Пример",
+                topicText: "Тема",
+                difficultyText: "Сложность",
+                timeText: "Время",
+                difficultyEasy: "Начальный",
+                difficultyMedium: "Средний",
+                difficultyHard: "Сложный",
+                solution: "Решение",
+                submitSolution: "Отправить решение",
+                notificationSuccess: "Решение отправлено! ID: {id}",
+                notificationError: "Ошибка: {error}",
+                outputTitle: "Результат выполнения",
+                loadingText: "Загрузка...",
+                fileBtnText: "Выбрать файл",
+                noFileSelected: "Файл не выбран",
+                submissionsTitle: "История посылок",
+                submissionTime: "Время",
+                verdict: "Вердикт",
+                executionTime: "Время (мс)",
+                memory:"Память (КБ)",
+                actions: "Действия",
+                view: "Просмотр",
+                noSubmissions: "Посылок нет",
+                fileTooLarge: "Файл слишком большой! Максимальный размер: 5 МБ"
+            },
+            en: {
+                menuProfileText: "My Profile",
+                menuCompeteText: "Competition",
+                menuArchiveText: "Problem Archive",
+                menuSubmissionsText: "My Submissions",
+                menuLearningText: "Learning",
+                menuLogoutText: "Logout",
+                taskTitle: "Task",
+                conditionTitle: "Problem Statement",
+                examplesTitle: "Examples",
+                noExamples: "No examples available",
+                solutionsTitle: "Example Solutions",
+                editorTitle: "Code Editor",
+                runBtn: "Run",
+                submitBtn: "Submit",
+                inputData: "Input",
+                outputData: "Output",
+                copyBtn: "Copy",
+                example: "Example",
+                topicText: "Topic",
+                difficultyText: "Difficulty",
+                timeText: "Time",
+                difficultyEasy: "Beginner",
+                difficultyMedium: "Intermediate",
+                difficultyHard: "Advanced",
+                solution: "Solution",
+                submitSolution: "Submit solution",
+                notificationSuccess: "Solution submitted! ID: {id}",
+                notificationError: "Error: {error}",
+                outputTitle: "Execution Result",
+                loadingText: "Loading...",
+                fileBtnText: "Select file",
+                noFileSelected: "No file selected",
+                submissionsTitle: "Submission History",
+                submissionTime: "Time",
+                verdict: "Verdict",
+                executionTime: "Time (ms)",
+                memory:"Memory (KB)",
+                actions: "Actions",
+                view: "View",
+                noSubmissions: "No submissions",
+                fileTooLarge: "File too large! Max size: 5 MB"
+            },
+            tj: {
+                menuProfileText: "Профили ман",
+                menuCompeteText: "Мусобиқа",
+                menuArchiveText: "Архиви масъалаҳо",
+                menuSubmissionsText: "Фиристодаҳои ман",
+                menuLearningText: "Омӯзиш",
+                menuLogoutText: "Баромадан",
+                taskTitle: "Масъала",
+                conditionTitle: "Шарти масъала",
+                examplesTitle: "Намунаҳо",
+                noExamples: "Намунаҳо мавҷуд нестанд",
+                solutionsTitle: "Намунаҳои ҳал",
+                editorTitle: "Муҳаррири код",
+                runBtn: "Иҷро кардан",
+                submitBtn: "Фиристодан",
+                inputData: "Додаҳои вуруд",
+                outputData: "Додаҳои баромад",
+                copyBtn: "Нусха бардорӣ",
+                example: "Намуна",
+                topicText: "Мавзӯъ",
+                difficultyText: "Мураккабӣ",
+                timeText: "Вақт",
+                difficultyEasy: "Омӯзишӣ",
+                difficultyMedium: "Миёна",
+                difficultyHard: "Пешрафта",
+                solution: "Ҳал",
+                submitSolution: "Фиристодани ҳал",
+                notificationSuccess: "Ҳал фиристода шуд! ID: {id}",
+                notificationError: "Хатогӣ: {error}",
+                outputTitle: "Натиҷаи иҷро",
+                loadingText: "Бор шуда истодааст...",
+                fileBtnText: "Файл интихоб кунед",
+                noFileSelected: "Файл интихоб нашудааст",
+                submissionsTitle: "Таърихи фиристодаҳо",
+                submissionTime: "Вақт",
+                verdict: "Вердикт",
+                executionTime: "Вақт (мс)",
+                memory:"Хотира (KB)",
+                actions: "Амалҳо",
+                view: "Намоиш",
+                noSubmissions: "Фиристода ҳоло нест!",
+                fileTooLarge: "Файл хеле калон аст! Андозаи максималӣ: 5 MB"
+            }
+        };
+        
+        // Параметры из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskId = urlParams.get('id') || '1';
+        currentTaskId = taskId;
+        
+        // Функции для работы с куки
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return 'ru';
+        }
+
+        function setCookie(name, value, days = 30) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+        }
+
+        // Установка активного языка
+        function setActiveLanguage(lang) {
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            const langMap = {
+                'ru': 'lang-ru',
+                'en': 'lang-en',
+                'tj': 'lang-tj'
+            };
+            
+            if (langMap[lang]) {
+                document.getElementById(langMap[lang]).classList.add('active');
+            } else {
+                document.getElementById('lang-ru').classList.add('active');
+            }
+        }
+
+        // Применение перевода
+        function applyLanguage(lang) {
+            const translations = i18n[lang];
+            if (!translations) return;
+
+            Object.keys(translations).forEach(key => {
+                const elements = document.querySelectorAll(`[id="${key}"]`);
+                elements.forEach(el => {
+                    el.textContent = translations[key];
+                });
+            });
+        }
+        
+        // Показать уведомление
+        function showNotification(key, type, params = {}) {
+            const lang = getCookie('language') || 'ru';
+            const translations = i18n[lang];
+            let message = translations?.[key] || key;
+            
+            // Замена плейсхолдеров
+            message = message.replace(/{(\w+)}/g, (match, p1) => params[p1] || match);
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+        
+        // Отображение примеров
+        function displayExamples(examples) {
+            const container = document.getElementById('examples-container');
+            if (!examples || examples.length === 0) {
+                container.innerHTML = `<div class="notification"><i class="fas fa-info-circle"></i>${i18n[getCookie('language')] || 'ru'}.noExamples</div>`;
+                return;
+            }
+            
+            let html = `<div class="example-grid">`;
+            
+            examples.forEach((example, index) => {
+                html += `
+                    <div class="example-card">
+                        <div class="example-header">
+                            <div class="example-title">${i18n[getCookie('language')] || 'ru'}.example} ${index + 1}</div>
+                        </div>
+                        <div class="section">
+                            <div class="section-title"><i class="fas fa-sign-in-alt"></i> ${i18n[getCookie('language')] || 'ru'}.inputData}</div>
+                            <pre>${example.input}</pre>
+                        </div>
+                        <div class="section">
+                            <div class="section-title"><i class="fas fa-sign-out-alt"></i> ${i18n[getCookie('language')] || 'ru'}.outputData}</div>
+                            <pre>${example.output}</pre>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+        
+        // Инициализация кнопок копирования
+        function initCopyButtons() {
+            document.querySelectorAll('.copy-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-copy');
+                    const targetElement = document.getElementById(targetId);
+                    const text = targetElement.textContent;
+                    
+                    navigator.clipboard.writeText(text).then(() => {
+                        const lang = getCookie('language');
+                        const translations = i18n[lang];
+                        
+                        this.innerHTML = `<i class="fas fa-check"></i> ${translations.copyBtn} ✓`;
+                        this.style.backgroundColor = '#2e7d32';
+                        
+                        setTimeout(() => {
+                            this.innerHTML = `<i class="fas fa-copy"></i> ${translations.copyBtn}`;
+                            this.style.backgroundColor = '';
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Ошибка копирования:', err);
+                        this.textContent = 'Ошибка!';
+                        this.style.backgroundColor = '#f44336';
+                    });
+                });
+            });
+        }
+        
+        // Смена языка
+        function changeLanguage(lang) {
+            setCookie('language', lang);
+            setActiveLanguage(lang);
+            applyLanguage(lang);
+            loadTaskData();
+        }
+        
+        // Загрузка данных задачи
+        async function loadTaskData() {
+            const language = getCookie('language') || 'ru';
+            setActiveLanguage(language);
+            applyLanguage(language);
+            
+            try {
+                // Загрузка метаинформации
+                const meta = {
+                    id: taskId,
+                    title: { ru: `Задача ${taskId}`, en: `Task ${taskId}`, tj: `Масъала ${taskId}` },
+                    topic: { ru: "Алгоритмы", en: "Algorithms", tj: "Алгоритмҳо" },
+                    difficulty: "medium",
+                    time: "1 секунда"
+                };
+                
+                // Установка заголовка
+                const taskTitleEl = document.getElementById('taskTitle').querySelector('span');
+                if (taskTitleEl) {
+                    taskTitleEl.textContent = meta.title[language] || meta.title.ru || `Задача ${taskId}`;
+                }
+                
+                // Отображение метаданных
+                const translations = i18n[language];
+                
+                // Тема
+                const topicEl = document.getElementById('taskTopic');
+                if (topicEl) {
+                    topicEl.querySelector('span:last-child').textContent = 
+                        `${translations.topicText}: ${meta.topic[language] || meta.topic.ru || ''}`;
+                }
+                
+                // Сложность
+                const difficultyEl = document.getElementById('taskDifficulty');
+                if (difficultyEl) {
+                    const badge = difficultyEl.querySelector('.difficulty-badge');
+                    if (badge) {
+                        let difficultyClass = '';
+                        let difficultyText = '';
+                        switch(meta.difficulty.toLowerCase()) {
+                            case 'easy':
+                                difficultyClass = 'difficulty-easy';
+                                difficultyText = translations.difficultyEasy;
+                                break;
+                            case 'medium':
+                                difficultyClass = 'difficulty-medium';
+                                difficultyText = translations.difficultyMedium;
+                                break;
+                            case 'hard':
+                                difficultyClass = 'difficulty-hard';
+                                difficultyText = translations.difficultyHard;
+                                break;
+                            default:
+                                difficultyClass = 'difficulty-medium';
+                                difficultyText = meta.difficulty;
+                        }
+                        badge.className = `difficulty-badge ${difficultyClass}`;
+                        badge.textContent = difficultyText;
+                    }
+                }
+                
+                // Время
+                const timeEl = document.getElementById('taskTime');
+                if (timeEl) {
+                    timeEl.querySelector('span:last-child').textContent = 
+                        `${translations.timeText}: ${meta.time}`;
+                }
+                
+                // Загрузка условия
+                const conditionContent = document.getElementById('condition-content');
+                conditionContent.innerHTML = `
+                    <h2>${meta.title[language] || meta.title.ru}</h2>
+                    <div class="math-container">
+                        <p>$$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$</p>
+                    </div>
+                    <p>${translations.conditionTitle}: Напишите программу, которая вычисляет сумму чисел от 1 до n.</p>
+                    <div class="section">
+                        <div class="section-title"><i class="fas fa-sign-in-alt"></i> ${translations.inputData}</div>
+                        <p>Одно целое число n (1 ≤ n ≤ 1000).</p>
+                    </div>
+                    <div class="section">
+                        <div class="section-title"><i class="fas fa-sign-out-alt"></i> ${translations.outputData}</div>
+                        <p>Одно целое число - сумма чисел от 1 до n.</p>
+                    </div>
+                `;
+                
+                // Инициализация MathJax
+                MathJax.typesetPromise();
+                
+                // Загрузка примеров
+                const examples = [
+                    { input: "5", output: "15" },
+                    { input: "10", output: "55" }
+                ];
+                displayExamples(examples);
+                
+                // Загрузка решений
+                const solutions = [
+                    { id: 1, lang: "C++", code: "#include <iostream>\nusing namespace std;\n\nint main() {\n    int n, sum = 0;\n    cin >> n;\n    for (int i = 1; i <= n; i++) {\n        sum += i;\n    }\n    cout << sum << endl;\n    return 0;\n}" },
+                    { id: 2, lang: "Python", code: "n = int(input())\nprint(n*(n+1)//2)" }
+                ];
+                
+                let solutionsHTML = `<div class="solutions-grid">`;
+                solutions.forEach(solution => {
+                    solutionsHTML += `
+                        <div class="solution-card">
+                            <div class="solution-header">
+                                <span class="solution-lang">${solution.lang}</span>
+                                <button class="copy-btn" data-copy="solution-${solution.id}">
+                                    <i class="fas fa-copy"></i> ${translations.copyBtn}
+                                </button>
+                            </div>
+                            <div class="solution-code">
+                                <pre id="solution-${solution.id}"><code>${solution.code}</code></pre>
+                            </div>
+                        </div>
+                    `;
+                });
+                solutionsHTML += `</div>`;
+                document.getElementById('solutions-container').innerHTML = solutionsHTML;
+                initCopyButtons();
+                
+                // Загрузка истории посылок
+                const submissions = [
+                    { id: 123, time: "2023-10-15 14:30:22", verdict: "Accepted", time_ms: 15, memory_kb: 256 },
+                    { id: 122, time: "2023-10-15 14:25:17", verdict: "Wrong Answer", time_ms: 14, memory_kb: 256 }
+                ];
+                
+                let submissionsHTML = '';
+                if (submissions.length > 0) {
+                    submissionsHTML = `
+                        <table class="submissions-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>${translations.submissionTime}</th>
+                                    <th>${translations.verdict}</th>
+                                    <th>${translations.executionTime}</th>
+                                    <th>${translations.memory}</th>
+                                    <th>${translations.actions}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    submissions.forEach(sub => {
+                        submissionsHTML += `
+                            <tr>
+                                <td>${sub.id}</td>
+                                <td>${sub.time}</td>
+                                <td class="verdict ${sub.verdict.replace(' ', '')}">${sub.verdict}</td>
+                                <td>${sub.time_ms}</td>
+                                <td>${sub.memory_kb}</td>
+                                <td>
+                                    <button class="btn-view" onclick="viewSubmission(${sub.id})">
+                                        <i class="fas fa-eye"></i> ${translations.view}
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    submissionsHTML += `
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    submissionsHTML = `<div class="notification"><i class="fas fa-info-circle"></i>${translations.noSubmissions}</div>`;
+                }
+                
+                document.getElementById('submissions-container').innerHTML = submissionsHTML;
+                
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                const translations = i18n[getCookie('language') || 'ru'];
+                const conditionContent = document.getElementById('condition-content');
+                if (conditionContent) {
+                    conditionContent.innerHTML = `<div class="notification error"><i class="fas fa-exclamation-circle"></i>${translations.notificationError.replace('{error}', error.message)}</div>`;
+                }
+            }
+        }
+        
+        // Просмотр посылки
+        function viewSubmission(id) {
+            const code = `// Код посылки #${id}\n#include <iostream>\n\nint main() {\n    std::cout << "Hello from submission #${id}";\n    return 0;\n}`;
+            
+            document.getElementById('modalSubmissionId').textContent = id;
+            document.getElementById('modalCodeContainer').innerHTML = `
+                <div class="editor-wrapper">
+                    <textarea id="modalEditor">${code}</textarea>
+                </div>
+            `;
+            
+            // Инициализация редактора в модальном окне
+            const editor = CodeMirror.fromTextArea(document.getElementById('modalEditor'), {
+                mode: 'text/x-c++src',
+                theme: 'dracula',
+                lineNumbers: true,
+                readOnly: true
+            });
+            
+            document.getElementById('submissionModal').style.display = 'block';
+        }
+        
+        // Закрытие модального окна
+        function closeModal() {
+            document.getElementById('submissionModal').style.display = 'none';
+        }
+        
+        // Выход из системы
+        function logout() {
+            document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            window.location.href = "login.html";
+        }
+        
+        // Обработка загрузки файла
+        function handleFileUpload() {
+            document.getElementById('fileUploadBtn').addEventListener('click', function() {
+                document.getElementById('fileInput').click();
+            });
+            
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                // Проверка размера файла (5 МБ)
+                if (file.size > 5 * 1024 * 1024) {
+                    document.getElementById('fileSizeError').style.display = 'block';
+                    return;
+                }
+                
+                document.getElementById('fileSizeError').style.display = 'none';
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                
+                // Определение языка по расширению файла
+                const ext = file.name.split('.').pop().toLowerCase();
+                const langMap = {
+                    'cpp': 'cpp', 'cc': 'cpp', 'cxx': 'cpp', 'c++': 'cpp', 'h': 'cpp', 'hpp': 'cpp',
+                    'py': 'python',
+                    'java': 'java',
+                    'js': 'javascript',
+                    'cs': 'csharp',
+                    'pas': 'pascal',
+                    'go': 'go',
+                    'rs': 'rust'
+                };
+                
+                if (langMap[ext]) {
+                    currentLanguage = langMap[ext];
+                    document.getElementById('languageSelect').value = currentLanguage;
+                    setEditorMode(currentLanguage);
+                }
+                
+                // Чтение содержимого файла
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    codeEditor.setValue(e.target.result);
+                };
+                reader.readAsText(file);
+            });
+        }
+        
+        // Отправка решения
+        async function submitSolution() {
+            const lang = getCookie('language');
+            const translations = i18n[lang];
+            const submitBtn = document.getElementById('submitBtn');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> ${translations.submitBtn} <span class="loading"></span>`;
+            
+            const code = codeEditor.getValue();
+            
+            try {
+                // Имитация отправки на сервер
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                const submissionId = Math.floor(Math.random() * 1000);
+                showNotification('notificationSuccess', 'success', {id: submissionId});
+                
+                // Обновляем историю посылок
+                const newSubmission = {
+                    id: submissionId,
+                    time: new Date().toLocaleString(),
+                    verdict: "Accepted",
+                    time_ms: Math.floor(Math.random() * 50),
+                    memory_kb: 256 + Math.floor(Math.random() * 256)
+                };
+                
+                const tableBody = document.querySelector('.submissions-table tbody');
+                if (tableBody) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${newSubmission.id}</td>
+                        <td>${newSubmission.time}</td>
+                        <td class="verdict ${newSubmission.verdict.replace(' ', '')}">${newSubmission.verdict}</td>
+                        <td>${newSubmission.time_ms}</td>
+                        <td>${newSubmission.memory_kb}</td>
+                        <td>
+                            <button class="btn-view" onclick="viewSubmission(${newSubmission.id})">
+                                <i class="fas fa-eye"></i> ${translations.view}
+                            </button>
+                        </td>
+                    `;
+                    tableBody.insertBefore(row, tableBody.firstChild);
+                }
+                
+            } catch (error) {
+                console.error('Ошибка отправки:', error);
+                showNotification('notificationError', 'error', {error: translations.notificationError});
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> ${translations.submitBtn}`;
+            }
+        }
+        
+        // Инициализация при загрузке
+        window.addEventListener('DOMContentLoaded', () => {
+            const lang = getCookie('language') || 'ru';
+            setActiveLanguage(lang);
+            applyLanguage(lang);
+            
+            // Инициализация редактора
+            initEditor();
+            
+            // Обработчики событий
+            document.getElementById('submitBtn').addEventListener('click', submitSolution);
+            handleFileUpload();
+            
+            // Floating menu
+            const menuButton = document.getElementById('floatingMenuButton');
+            const menuContent = document.getElementById('floatingMenuContent');
+            
+            menuButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menuContent.style.display = menuContent.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!menuContent.contains(e.target)) {
+                    menuContent.style.display = 'none';
+                }
+            });
+            
+            // Загрузка данных задачи
+            loadTaskData();
+            
+            // Закрытие модального окна при клике вне его
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('submissionModal');
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        });
+    
+    </script>
+</body>
+</html>

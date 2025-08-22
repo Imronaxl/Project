@@ -1,0 +1,25 @@
+{
+  "id": "dynamic-programming",
+  "titles": {
+    "ru": "Динамическое программирование",
+    "en": "Dynamic Programming",
+    "tj": "Барномарезии динамикӣ"
+  },
+  "descriptions": {
+    "ru": "Изучение методов решения задач с помощью динамического программирования",
+    "en": "Learning methods for solving problems using dynamic programming",
+    "tj": "Омӯзиши усулҳои ҳалли мушкилот бо истифода аз барномарезии динамикӣ"
+  },
+  "difficulty": 4,
+  "categories": ["algorithms"],
+  "author": {
+    "ru": "Иван Петров",
+    "en": "Ivan Petrov",
+    "tj": "Иван Петров"
+  },
+  "time_estimate": {
+    "ru": "45-60 мин",
+    "en": "45-60 min",
+    "tj": "45-60 дақ"
+  }
+}

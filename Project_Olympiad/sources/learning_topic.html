@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="mul">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача - Tajik Fire</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/rust/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/go/go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/pascal/pascal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+    <style>
+        /* ... (остальные стили остаются без изменений) ... */
+
+        /* Новые стили для кнопки выбора файла */
+        .file-upload-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .file-upload-btn {
+            padding: 8px 15px;
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .file-upload-btn:hover {
+            background-color: #5a75f0;
+            transform: translateY(-2px);
+        }
+        
+        .file-name {
+            font-size: 14px;
+            color: #aaa;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .file-size-error {
+            color: #f44336;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- ... (фрагмент с плавающим меню без изменений) ... -->
+    
+    <div class="header">
+        <!-- ... (фрагмент заголовка без изменений) ... -->
+    </div>
+    
+    <div class="card" id="description-card">
+        <!-- ... (фрагмент описания без изменений) ... -->
+    </div>
+
+    <div class="card" id="editor-card">
+        <div class="card-title">
+            <i class="fas fa-code"></i>
+            <span id="editorTitle">Редактор кода</span>
+        </div>
+        <div class="editor-container">
+            <div class="editor-header">
+                <select id="languageSelect" class="language-select">
+                    <option value="cpp">C++</option>
+                    <option value="python">Python</option>
+                    <option value="java">Java</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="csharp">C#</option>
+                    <option value="pascal">Pascal</option>
+                    <option value="go">Go</option>
+                    <option value="rust">Rust</option>
+                </select>
+                
+                <div class="editor-controls">
+                    <!-- Убрана кнопка запуска -->
+                    <button class="editor-control submit" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        <span id="submitBtnText">Отправить</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="editor-wrapper">
+                <textarea id="codeEditor"></textarea>
+            </div>
+            
+            <!-- Добавлен блок для загрузки файлов -->
+            <div class="file-upload-container">
+                <input type="file" id="fileInput" accept=".cpp,.py,.java,.js,.cs,.pas,.go,.rs" style="display: none">
+                <button class="file-upload-btn" id="fileUploadBtn">
+                    <i class="fas fa-file-upload"></i>
+                    <span id="fileBtnText">Выбрать файл</span>
+                </button>
+                <span class="file-name" id="fileName">Файл не выбран</span>
+            </div>
+            <div class="file-size-error" id="fileSizeError">
+                Файл слишком большой! Максимальный размер: 5 МБ
+            </div>
+            
+            <!-- Убран блок вывода результатов выполнения -->
+        </div>
+    </div>
+
+    <div class="card" id="examples-card">
+        <div class="card-title">
+            <i class="fas fa-table"></i>
+            <span id="examplesTitle">Примеры</span>
+        </div>
+        <div class="card-content" id="examples-container">
+            <!-- Примеры остаются без изменений -->
+        </div>
+    </div>
+
+    <!-- Убран блок с решениями -->
+    <!-- <div class="card" id="solutions-card"> ... </div> -->
+
+    <script>
+        // Конфигурация CodeMirror
+        let codeEditor = null;
+        let currentLanguage = 'cpp';
+        let currentTaskId = null;
+        let selectedFile = null;
+        
+        // Инициализация редактора
+        function initEditor() {
+            const textarea = document.getElementById('codeEditor');
+            codeEditor = CodeMirror.fromTextArea(textarea, {
+                mode: 'text/x-c++src',
+                theme: 'dracula',
+                lineNumbers: true,
+                indentUnit: 4,
+                indentWithTabs: false,
+                smartIndent: true,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                styleActiveLine: true,
+                lineWrapping: true,
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+                foldGutter: true,
+                extraKeys: {
+                    "Ctrl-Space": "autocomplete",
+                    "Tab": function(cm) {
+                        if (cm.somethingSelected()) {
+                            cm.indentSelection("add");
+                        } else {
+                            cm.replaceSelection("    ", "end");
+                        }
+                    },
+                    "Shift-Tab": function(cm) {
+                        cm.indentSelection("subtract");
+                    }
+                }
+            });
+            
+            // Установка начального кода
+            setStarterCode(currentLanguage);
+            
+            // Изменение языка
+            document.getElementById('languageSelect').addEventListener('change', function() {
+                currentLanguage = this.value;
+                setEditorMode(currentLanguage);
+                setStarterCode(currentLanguage);
+            });
+            
+            // Обработка выбора файла
+            document.getElementById('fileUploadBtn').addEventListener('click', function() {
+                document.getElementById('fileInput').click();
+            });
+            
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                // Проверка размера файла (5 МБ)
+                if (file.size > 5 * 1024 * 1024) {
+                    document.getElementById('fileSizeError').style.display = 'block';
+                    return;
+                }
+                
+                document.getElementById('fileSizeError').style.display = 'none';
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                
+                // Определение языка по расширению файла
+                const ext = file.name.split('.').pop().toLowerCase();
+                const langMap = {
+                    'cpp': 'cpp',
+                    'cc': 'cpp',
+                    'cxx': 'cpp',
+                    'c++': 'cpp',
+                    'h': 'cpp',
+                    'hpp': 'cpp',
+                    'py': 'python',
+                    'java': 'java',
+                    'js': 'javascript',
+                    'cs': 'csharp',
+                    'pas': 'pascal',
+                    'go': 'go',
+                    'rs': 'rust'
+                };
+                
+                if (langMap[ext]) {
+                    currentLanguage = langMap[ext];
+                    document.getElementById('languageSelect').value = currentLanguage;
+                    setEditorMode(currentLanguage);
+                }
+                
+                // Чтение содержимого файла
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    codeEditor.setValue(e.target.result);
+                };
+                reader.readAsText(file);
+            });
+        }
+        
+        // Установка режима редактора в зависимости от языка
+        function setEditorMode(lang) {
+            let mode = '';
+            switch(lang) {
+                case 'cpp': mode = 'text/x-c++src'; break;
+                case 'python': mode = 'text/x-python'; break;
+                case 'java': mode = 'text/x-java'; break;
+                case 'javascript': mode = 'text/javascript'; break;
+                case 'csharp': mode = 'text/x-csharp'; break;
+                case 'pascal': mode = 'text/x-pascal'; break;
+                case 'go': mode = 'text/x-go'; break;
+                case 'rust': mode = 'text/x-rustsrc'; break;
+                default: mode = 'text/x-c++src';
+            }
+            codeEditor.setOption('mode', mode);
+        }
+        
+        // Установка стартового кода для языка
+        function setStarterCode(lang) {
+            let code = '';
+            switch(lang) {
+                case 'cpp':
+                    code = `#include <iostream>\nusing namespace std;\n\nint main() {\n    // Ваш код здесь\n    return 0;\n}`;
+                    break;
+                case 'python':
+                    code = `# Ваш код здесь`;
+                    break;
+                case 'java':
+                    code = `public class Main {\n    public static void main(String[] args) {\n        // Ваш код здесь\n    }\n}`;
+                    break;
+                case 'javascript':
+                    code = `// Ваш код здесь`;
+                    break;
+                case 'csharp':
+                    code = `using System;\n\nclass Program {\n    static void Main() {\n        // Ваш код здесь\n    }\n}`;
+                    break;
+                case 'pascal':
+                    code = `program HelloTajikFire;\nbegin\n    // Ваш код здесь\nend.`;
+                    break;
+                case 'go':
+                    code = `package main\n\nimport "fmt"\n\nfunc main() {\n    // Ваш код здесь\n}`;
+                    break;
+                case 'rust':
+                    code = `fn main() {\n    // Ваш код здесь\n}`;
+                    break;
+            }
+            codeEditor.setValue(code);
+        }
+        
+        // Локализация
+        const i18n = {
+            ru: {
+                // ... (существующие переводы) ...
+                fileBtnText: "Выбрать файл",
+                noFileSelected: "Файл не выбран",
+                fileTooLarge: "Файл слишком большой! Максимальный размер: 5 МБ"
+            },
+            en: {
+                // ... (существующие переводы) ...
+                fileBtnText: "Select file",
+                noFileSelected: "No file selected",
+                fileTooLarge: "File too large! Max size: 5 MB"
+            },
+            tj: {
+                // ... (существующие переводы) ...
+                fileBtnText: "Файл интихоб кунед",
+                noFileSelected: "Файл интихоб нашудааст",
+                fileTooLarge: "Файл хеле калон аст! Андозаи максималӣ: 5 MB"
+            }
+        };
+
+        // ... (остальной код без изменений) ...
+
+        // Убрана функция runCode()
+
+        // Отправка решения
+        async function submitSolution() {
+            const lang = getCookie('language');
+            const translations = i18n[lang];
+            const submitBtn = document.getElementById('submitBtn');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> ${translations.submitBtn} <span class="loading"></span>`;
+            
+            // Получаем код либо из редактора, либо из файла
+            let code = codeEditor.getValue();
+            
+            try {
+                const response = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        task_id: currentTaskId,
+                        programming_lang: currentLanguage,
+                        code: code
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showNotification('notificationSuccess', 'success', {id: result.submission_id});
+                } else {
+                    showNotification('notificationError', 'error', {error: result.error});
+                }
+            } catch (error) {
+                console.error('Ошибка отправки:', error);
+                showNotification('notificationError', 'error', {error: translations.notificationError});
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> ${translations.submitBtn}`;
+            }
+        }
+
+        // Инициализация при загрузке
+        window.addEventListener('DOMContentLoaded', () => {
+            const lang = getCookie('language') || 'ru';
+            setActiveLanguage(lang);
+            applyLanguage(lang);
+            
+            // Применить перевод для элементов файловой загрузки
+            document.getElementById('fileBtnText').textContent = i18n[lang].fileBtnText;
+            document.getElementById('fileName').textContent = i18n[lang].noFileSelected;
+            document.getElementById('fileSizeError').textContent = i18n[lang].fileTooLarge;
+            
+            // Инициализация редактора
+            initEditor();
+            
+            // Обработчики событий
+            document.getElementById('submitBtn').addEventListener('click', submitSolution);
+            
+            // ... (остальной код инициализации без изменений) ...
+        });
+    </script>
+</body>
+</html>

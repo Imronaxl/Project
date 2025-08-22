@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="mul">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tajik Fire - Learning Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="styles/learning.css">
+
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    
+    <header class="learning-header">
+        <div class="header-content">
+            <div class="logo-container">
+                <h1><i class="fas fa-graduation-cap"></i> Tajik Fire Learning</h1>
+                <p id="header-subtitle">Мастер алгоритмов и структур данных</p>
+            </div>
+            <div class="language-switcher">
+                <button class="lang-btn" data-lang="tj">TJ</button>
+                <button class="lang-btn active" data-lang="ru">RU</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="learning-container">
+        <!-- Левая панель - навигация и фильтры -->
+        <aside class="sidebar">
+            <div class="search-section">
+                <div class="search-box">
+                    <input type="text" id="topic-search" placeholder="Поиск тем...">
+                    <button id="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3><i class="fas fa-filter"></i> Фильтры</h3>
+                <div class="filter-group">
+                    <label for="difficulty-filter">Сложность</label>
+                    <select id="difficulty-filter" class="nice-select">
+                        <option value="0">Все уровни</option>
+                        <option value="1">★ Начинающий</option>
+                        <option value="2">★★ Легкий</option>
+                        <option value="3">★★★ Средний</option>
+                        <option value="4">★★★★ Сложный</option>
+                        <option value="5">★★★★★ Эксперт</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="category-filter">Категория</label>
+                    <select id="category-filter" class="nice-select">
+                        <option value="all">Все категории</option>
+                        <option value="algorithms">Алгоритмы</option>
+                        <option value="data-structures">Структуры данных</option>
+                        <option value="math">Математика</option>
+                        <option value="programming">Программирование</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Мой прогресс</label>
+                    <div class="progress-options">
+                        <button class="progress-btn active" data-progress="all">Все темы</button>
+                        <button class="progress-btn" data-progress="completed">Завершено</button>
+                        <button class="progress-btn" data-progress="bookmarked">В закладках</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <h3><i class="fas fa-chart-line"></i> Моя статистика</h3>
+                <div class="stat-item">
+                    <div class="stat-value" id="completed-count">0</div>
+                    <div class="stat-label">Тем завершено</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="bookmarked-count">0</div>
+                    <div class="stat-label">Тем в закладках</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="problems-solved">0</div>
+                    <div class="stat-label">Задач решено</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Основное содержимое -->
+        <main class="content-area">
+            <div class="content-header">
+                <h2 id="content-title">Темы для изучения</h2>
+                <div class="view-options">
+                    <button id="grid-view" class="view-btn active"><i class="fas fa-th"></i></button>
+                    <button id="list-view" class="view-btn"><i class="fas fa-list"></i></button>
+                </div>
+            </div>
+
+            <!-- Список тем -->
+            <div class="topics-list grid-view" id="topics-list">
+                <!-- Будет заполнено динамически -->
+            </div>
+
+            <!-- Пагинация -->
+            <div class="pagination">
+                <button id="prev-btn" class="pagination-btn" disabled>
+                    <i class="fas fa-chevron-left"></i> Предыдущая
+                </button>
+                <div class="page-info" id="page-info">Страница 1 из 1</div>
+                <button id="next-btn" class="pagination-btn">
+                    Следующая <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Детали темы (правая панель) -->
+    <aside class="topic-details" id="topic-details">
+        <div class="details-header">
+            <button id="close-details" class="close-btn">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 id="topic-title">Название темы</h2>
+            <div class="topic-actions">
+                <button id="bookmark-btn" class="action-btn">
+                    <i class="far fa-bookmark"></i> В закладки
+                </button>
+                <button id="complete-btn" class="action-btn">
+                    <i class="far fa-check-circle"></i> Завершено
+                </button>
+            </div>
+        </div>
+
+        <div class="topic-meta">
+            <div class="meta-item difficulty">
+                <span class="meta-label">Сложность:</span>
+                <span class="stars" id="topic-difficulty">★★★</span>
+            </div>
+            <div class="meta-item time">
+                <span class="meta-label">Время изучения:</span>
+                <span id="topic-time">30-45 мин</span>
+            </div>
+            <div class="meta-item author">
+                <span class="meta-label">Автор:</span>
+                <span id="topic-author">Команда экспертов</span>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="theory">
+                <i class="fas fa-book"></i> Теория
+            </button>
+            <button class="tab-btn" data-tab="problems">
+                <i class="fas fa-tasks"></i> Задачи
+            </button>
+            <button class="tab-btn" data-tab="resources">
+                <i class="fas fa-link"></i> Ресурсы
+            </button>
+        </div>
+
+        <div class="tab-content">
+            <div id="theory-content" class="tab-pane active">
+                <div class="content-loader">
+                    <div class="loader"></div>
+                    <p>Загрузка теории...</p>
+                </div>
+            </div>
+            <div id="problems-content" class="tab-pane">
+                <div class="content-loader">
+                    <div class="loader"></div>
+                    <p>Загрузка задач...</p>
+                </div>
+            </div>
+            <div id="resources-content" class="tab-pane">
+                <div class="content-loader">
+                    <div class="loader"></div>
+                    <p>Загрузка ресурсов...</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <script>
+        // Конфигурация
+        const config = {
+            itemsPerPage: 10,
+            currentPage: 1,
+            totalPages: 1,
+            currentTopic: null,
+            currentTab: 'theory',
+            lang: 'ru',
+            viewMode: 'grid',
+            topics: [],
+            searchQuery: '',
+            difficulty: 0,
+            category: 'all',
+            progressFilter: 'all'
+        };
+
+        // Локализация
+        const i18n = {
+            ru: {
+                search: "Поиск",
+                difficulty: "Сложность",
+                theory: "Теория",
+                problems: "Задачи",
+                back: "Назад",
+                prev: "Предыдущая",
+                next: "Следующая",
+                page: "Страница",
+                open: "Открыть",
+                complete: "Завершено",
+                bookmark: "В закладки",
+                topics: "Темы",
+                stats: "Статистика",
+                categories: "Категории",
+                progress: "Прогресс",
+                resources: "Ресурсы",
+                solve: "Решить",
+                loading: "Загрузка...",
+                all_topics: "Все темы",
+                completed: "Завершено",
+                bookmarked: "В закладках",
+                all_levels: "Все уровни",
+                beginner: "Начинающий",
+                easy: "Легкий",
+                medium: "Средний",
+                hard: "Сложный",
+                expert: "Эксперт",
+                time_estimate: "Время изучения",
+                author: "Автор",
+                close: "Закрыть",
+                header_subtitle: "Мастер алгоритмов и структур данных",
+                topic_not_found: "Темы не найдены",
+                error_loading: "Ошибка загрузки",
+                empty_state: "Нет тем для отображения"
+            },
+            en: {
+                search: "Search",
+                difficulty: "Difficulty",
+                theory: "Theory",
+                problems: "Problems",
+                back: "Back",
+                prev: "Previous",
+                next: "Next",
+                page: "Page",
+                open: "Open",
+                complete: "Completed",
+                bookmark: "Bookmark",
+                topics: "Topics",
+                stats: "Statistics",
+                categories: "Categories",
+                progress: "Progress",
+                resources: "Resources",
+                solve: "Solve",
+                loading: "Loading...",
+                all_topics: "All Topics",
+                completed: "Completed",
+                bookmarked: "Bookmarked",
+                all_levels: "All Levels",
+                beginner: "Beginner",
+                easy: "Easy",
+                medium: "Medium",
+                hard: "Hard",
+                expert: "Expert",
+                time_estimate: "Time Estimate",
+                author: "Author",
+                close: "Close",
+                header_subtitle: "Master algorithms and data structures",
+                topic_not_found: "No topics found",
+                error_loading: "Error loading",
+                empty_state: "No topics to display"
+            },
+            tj: {
+                search: "Ҷустуҷӯ",
+                difficulty: "Мураккабӣ",
+                theory: "Назария",
+                problems: "Масъалаҳо",
+                back: "Бозгашт",
+                prev: "Қаблӣ",
+                next: "Навбатӣ",
+                page: "Саҳифа",
+                open: "Кушодан",
+                complete: "Анҷом дода шуд",
+                bookmark: "Хатбарак",
+                topics: "Мавзӯъҳо",
+                stats: "Омор",
+                categories: "Категорияҳо",
+                progress: "Пешравӣ",
+                resources: "Захираҳо",
+                solve: "Ҳал кардан",
+                loading: "Бор шуда истодааст...",
+                all_topics: "Ҳамаи мавзӯъҳо",
+                completed: "Анҷом дода шуд",
+                bookmarked: "Дар хатбарак",
+                all_levels: "Ҳамаи сатҳҳо",
+                beginner: "Оғозӣ",
+                easy: "Осон",
+                medium: "Миёна",
+                hard: "Мураккаб",
+                expert: "Муттахасис",
+                time_estimate: "Вақти таҳсил",
+                author: "Муаллиф",
+                close: "Пӯшидан",
+                header_subtitle: "Устод дар алгоритмҳо ва сохторҳои додаҳо",
+                topic_not_found: "Мавзӯъҳо ёфт нашуд",
+                error_loading: "Хато дар боркунӣ",
+                empty_state: "Мавзӯъҳо барои намоиш нестанд"
+            }
+        };
+
+        // Инициализация страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            // Установка языка
+            config.lang = getCookie('language') || 'ru';
+            applyTranslations();
+            
+            // Загрузка тем
+            loadTopics();
+            
+            // Настройка обработчиков событий
+            initEventListeners();
+        });
+
+        // Применение переводов
+        function applyTranslations() {
+            const lang = config.lang;
+            const texts = i18n[lang];
+            
+            // Обновление текстов
+            document.getElementById('topic-search').placeholder = texts.search;
+            document.querySelector('label[for="difficulty-filter"]').textContent = texts.difficulty;
+            document.querySelector('label[for="category-filter"]').textContent = texts.categories;
+            document.querySelector('.filter-section h3').innerHTML = `<i class="fas fa-filter"></i> ${texts.categories}`;
+            document.querySelector('.stats-section h3').innerHTML = `<i class="fas fa-chart-line"></i> ${texts.stats}`;
+            document.getElementById('prev-btn').innerHTML = `<i class="fas fa-chevron-left"></i> ${texts.prev}`;
+            document.getElementById('next-btn').innerHTML = `${texts.next} <i class="fas fa-chevron-right"></i>`;
+            document.getElementById('bookmark-btn').innerHTML = `<i class="far fa-bookmark"></i> ${texts.bookmark}`;
+            document.getElementById('complete-btn').innerHTML = `<i class="far fa-check-circle"></i> ${texts.complete}`;
+            document.querySelector('[data-tab="theory"]').innerHTML = `<i class="fas fa-book"></i> ${texts.theory}`;
+            document.querySelector('[data-tab="problems"]').innerHTML = `<i class="fas fa-tasks"></i> ${texts.problems}`;
+            document.querySelector('[data-tab="resources"]').innerHTML = `<i class="fas fa-link"></i> ${texts.resources}`;
+            document.querySelector('.progress-options button[data-progress="all"]').textContent = texts.all_topics;
+            document.querySelector('.progress-options button[data-progress="completed"]').textContent = texts.completed;
+            document.querySelector('.progress-options button[data-progress="bookmarked"]').textContent = texts.bookmarked;
+            document.getElementById('content-title').textContent = texts.topics;
+            document.getElementById('header-subtitle').textContent = texts.header_subtitle;
+            document.querySelector('#difficulty-filter option[value="0"]').textContent = texts.all_levels;
+            document.querySelector('#difficulty-filter option[value="1"]').textContent = `★ ${texts.beginner}`;
+            document.querySelector('#difficulty-filter option[value="2"]').textContent = `★★ ${texts.easy}`;
+            document.querySelector('#difficulty-filter option[value="3"]').textContent = `★★★ ${texts.medium}`;
+            document.querySelector('#difficulty-filter option[value="4"]').textContent = `★★★★ ${texts.hard}`;
+            document.querySelector('#difficulty-filter option[value="5"]').textContent = `★★★★★ ${texts.expert}`;
+            
+            // Обновление элементов метаданных
+            const metaLabels = document.querySelectorAll('.meta-label');
+            if (metaLabels.length > 0) {
+                metaLabels[0].textContent = texts.difficulty;
+                metaLabels[1].textContent = texts.time_estimate;
+                metaLabels[2].textContent = texts.author;
+            }
+            
+            // Обновление кнопки закрытия
+            document.getElementById('close-details').innerHTML = `<i class="fas fa-times"></i> ${texts.close}`;
+            
+            // Обновление кнопок языка
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.lang === lang) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // Инициализация обработчиков событий
+        function initEventListeners() {
+            // Поиск
+            document.getElementById('search-btn').addEventListener('click', () => {
+                config.currentPage = 1;
+                config.searchQuery = document.getElementById('topic-search').value;
+                loadTopics();
+            });
+            
+            document.getElementById('topic-search').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    config.currentPage = 1;
+                    config.searchQuery = e.target.value;
+                    loadTopics();
+                }
+            });
+            
+            // Фильтры
+            document.getElementById('difficulty-filter').addEventListener('change', (e) => {
+                config.difficulty = parseInt(e.target.value);
+                config.currentPage = 1;
+                loadTopics();
+            });
+            
+            document.getElementById('category-filter').addEventListener('change', (e) => {
+                config.category = e.target.value;
+                config.currentPage = 1;
+                loadTopics();
+            });
+            
+            // Прогресс
+            document.querySelectorAll('.progress-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.progress-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    config.progressFilter = btn.dataset.progress;
+                    config.currentPage = 1;
+                    loadTopics();
+                });
+            });
+            
+            // Пагинация
+            document.getElementById('prev-btn').addEventListener('click', () => {
+                if (config.currentPage > 1) {
+                    config.currentPage--;
+                    loadTopics();
+                }
+            });
+            
+            document.getElementById('next-btn').addEventListener('click', () => {
+                if (config.currentPage < config.totalPages) {
+                    config.currentPage++;
+                    loadTopics();
+                }
+            });
+            
+            // Режимы просмотра
+            document.getElementById('grid-view').addEventListener('click', () => {
+                setViewMode('grid');
+            });
+            
+            document.getElementById('list-view').addEventListener('click', () => {
+                setViewMode('list');
+            });
+            
+            // Закрытие деталей темы
+            document.getElementById('close-details').addEventListener('click', () => {
+                closeTopicDetails();
+            });
+            
+            document.getElementById('overlay').addEventListener('click', () => {
+                closeTopicDetails();
+            });
+            
+            // Вкладки
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openTab(btn.dataset.tab);
+                });
+            });
+            
+            // Действия с темой
+            document.getElementById('bookmark-btn').addEventListener('click', toggleBookmark);
+            document.getElementById('complete-btn').addEventListener('click', toggleComplete);
+            
+            // Переключение языка
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    setLanguage(btn.dataset.lang);
+                });
+            });
+        }
+
+        // Загрузка тем
+        function loadTopics() {
+            const topicsList = document.getElementById('topics-list');
+            topicsList.innerHTML = '';
+            
+            // Загружаем темы с сервера
+            fetch(`/api/learning/topics?page=${config.currentPage}&per_page=${config.itemsPerPage}&search=${config.searchQuery}&difficulty=${config.difficulty}&category=${config.category}&progress=${config.progressFilter}&lang=${config.lang}`)
+                .then(response => response.json())
+                .then(data => {
+                    config.totalPages = Math.ceil(data.total / config.itemsPerPage);
+                    updatePagination(data.total);
+                    
+                    if (data.topics.length === 0) {
+                        topicsList.innerHTML = `<div class="empty-state">${i18n[config.lang].empty_state}</div>`;
+                        return;
+                    }
+                    
+                    data.topics.forEach(topic => {
+                        const topicEl = document.createElement('div');
+                        topicEl.className = 'topic-card';
+                        topicEl.innerHTML = `
+                            <div class="topic-card-header">
+                                <h3>${topic.title}</h3>
+                                <div class="meta">
+                                    <div class="difficulty">${'★'.repeat(topic.difficulty)}</div>
+                                    <div class="category">${topic.category}</div>
+                                </div>
+                            </div>
+                            <div class="topic-card-body">
+                                <p>${topic.description}</p>
+                            </div>
+                            <div class="topic-card-footer">
+                                <button class="open-topic" data-id="${topic.id}">
+                                    <i class="fas fa-book-open"></i> ${i18n[config.lang].open}
+                                </button>
+                                <div class="progress">
+                                    <span>${topic.progress || 0}%</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${topic.progress || 0}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        topicsList.appendChild(topicEl);
+                    });
+                    
+                    // Обработчики открытия темы
+                    document.querySelectorAll('.open-topic').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            openTopicDetails(btn.dataset.id);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки тем:', error);
+                    topicsList.innerHTML = `<div class="empty-state">${i18n[config.lang].error_loading}</div>`;
+                });
+        }
+
+        // Открытие деталей темы
+        function openTopicDetails(topicId) {
+            config.currentTopic = topicId;
+            document.getElementById('topic-details').classList.add('active');
+            document.getElementById('overlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Загружаем метаданные темы
+            fetch(`/api/learning/topic/${topicId}/meta?lang=${config.lang}`)
+                .then(response => response.json())
+                .then(meta => {
+                    document.getElementById('topic-title').textContent = meta.title;
+                    document.getElementById('topic-difficulty').textContent = '★'.repeat(meta.difficulty);
+                    document.getElementById('topic-time').textContent = meta.time_estimate;
+                    document.getElementById('topic-author').textContent = meta.author;
+                });
+            
+            // Загружаем теорию по умолчанию
+            openTab('theory');
+        }
+
+        // Закрытие деталей темы
+        function closeTopicDetails() {
+            document.getElementById('topic-details').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+            document.body.style.overflow = '';
+            config.currentTopic = null;
+        }
+
+        // Загрузка теории
+        function loadTheory() {
+            const theoryContent = document.getElementById('theory-content');
+            theoryContent.innerHTML = '<div class="content-loader"><div class="loader"></div><p>${i18n[config.lang].loading}</p></div>';
+            
+            if (!config.currentTopic) return;
+            
+            fetch(`/api/learning/topic/${config.currentTopic}/theory?lang=${config.lang}`)
+                .then(response => response.json())
+                .then(data => {
+                    theoryContent.innerHTML = `
+                        <div class="theory-content">
+                            ${data.content}
+                        </div>
+                    `;
+                    
+                    // Инициализация MathJax
+                    if (window.MathJax) {
+                        MathJax.typesetPromise([theoryContent]).catch(err => console.error(err));
+                    }
+                })
+                .catch(error => {
+                    theoryContent.innerHTML = `<div class="error">${i18n[config.lang].error_loading}</div>`;
+                    console.error('Ошибка загрузки теории:', error);
+                });
+        }
+
+        // Загрузка задач
+        function loadProblems() {
+            const problemsContent = document.getElementById('problems-content');
+            problemsContent.innerHTML = '<div class="content-loader"><div class="loader"></div><p>${i18n[config.lang].loading}</p></div>';
+            
+            if (!config.currentTopic) return;
+            
+            fetch(`/api/learning/topic/${config.currentTopic}/problems?lang=${config.lang}`)
+                .then(response => response.json())
+                .then(problems => {
+                    let problemsHTML = '<div class="problem-list">';
+                    problems.forEach(problem => {
+                        const difficultyClass = `difficulty-${problem.difficulty <= 2 ? 'easy' : problem.difficulty <= 4 ? 'medium' : 'hard'}`;
+                        problemsHTML += `
+                            <div class="problem-item">
+                                <div class="problem-header">
+                                    <div class="problem-title">
+                                        <i class="fas fa-puzzle-piece"></i>
+                                        ${problem.title}
+                                    </div>
+                                    <div class="problem-difficulty ${difficultyClass}">
+                                        ${problem.difficulty} ${i18n[config.lang].difficulty.toLowerCase()}
+                                    </div>
+                                </div>
+                                <div class="problem-description">
+                                    ${problem.description}
+                                </div>
+                                <div class="problem-actions">
+                                    <button class="solve-btn" data-id="${problem.id}">
+                                        ${i18n[config.lang].solve}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    problemsHTML += '</div>';
+                    problemsContent.innerHTML = problemsHTML;
+                    
+                    // Обработчики для кнопок решения задач
+                    document.querySelectorAll('.solve-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            window.location.href = `/sources/task?id=${btn.dataset.id}`;
+                        });
+                    });
+                })
+                .catch(error => {
+                    problemsContent.innerHTML = `<div class="error">${i18n[config.lang].error_loading}</div>`;
+                    console.error('Ошибка загрузки задач:', error);
+                });
+        }
+
+        // Загрузка ресурсов
+        function loadResources() {
+            const resourcesContent = document.getElementById('resources-content');
+            resourcesContent.innerHTML = '<div class="content-loader"><div class="loader"></div><p>${i18n[config.lang].loading}</p></div>';
+            
+            if (!config.currentTopic) return;
+            
+            fetch(`/api/learning/topic/${config.currentTopic}/resources`)
+                .then(response => response.json())
+                .then(resources => {
+                    let resourcesHTML = '<div class="resource-list">';
+                    resources.forEach(resource => {
+                        resourcesHTML += `
+                            <div class="resource-item">
+                                <h3><i class="${resource.icon}"></i> ${resource.title}</h3>
+                                <p>${resource.description}</p>
+                                <a href="${resource.url}" target="_blank" class="resource-link">
+                                    ${i18n[config.lang].open} <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        `;
+                    });
+                    resourcesHTML += '</div>';
+                    resourcesContent.innerHTML = resourcesHTML;
+                })
+                .catch(error => {
+                    resourcesContent.innerHTML = `<div class="error">${i18n[config.lang].error_loading}</div>`;
+                    console.error('Ошибка загрузки ресурсов:', error);
+                });
+        }
+
+        // Вспомогательные функции
+        function updatePagination(totalItems) {
+            config.totalPages = Math.ceil(totalItems / config.itemsPerPage);
+            document.getElementById('page-info').textContent = 
+                `${i18n[config.lang].page} ${config.currentPage} ${i18n[config.lang].of} ${config.totalPages}`;
+            
+            document.getElementById('prev-btn').disabled = config.currentPage === 1;
+            document.getElementById('next-btn').disabled = config.currentPage === config.totalPages || config.totalPages === 0;
+        }
+
+        function setViewMode(mode) {
+            config.viewMode = mode;
+            const topicsList = document.getElementById('topics-list');
+            
+            if (mode === 'grid') {
+                topicsList.classList.remove('list-view');
+                topicsList.classList.add('grid-view');
+                document.getElementById('grid-view').classList.add('active');
+                document.getElementById('list-view').classList.remove('active');
+            } else {
+                topicsList.classList.remove('grid-view');
+                topicsList.classList.add('list-view');
+                document.getElementById('list-view').classList.add('active');
+                document.getElementById('grid-view').classList.remove('active');
+            }
+        }
+
+        function openTab(tabName) {
+            config.currentTab = tabName;
+            
+            // Активируем кнопку вкладки
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabName);
+            });
+            
+            // Показываем нужную панель
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.toggle('active', pane.id === `${tabName}-content`);
+            });
+            
+            // Загружаем контент если нужно
+            if (tabName === 'theory') {
+                loadTheory();
+            } else if (tabName === 'problems') {
+                loadProblems();
+            } else if (tabName === 'resources') {
+                loadResources();
+            }
+        }
+
+        function toggleBookmark() {
+            // Реализация добавления/удаления закладки
+            const btn = document.getElementById('bookmark-btn');
+            const isBookmarked = btn.classList.toggle('bookmarked');
+            
+            if (isBookmarked) {
+                btn.innerHTML = `<i class="fas fa-bookmark"></i> ${i18n[config.lang].bookmark}`;
+            } else {
+                btn.innerHTML = `<i class="far fa-bookmark"></i> ${i18n[config.lang].bookmark}`;
+            }
+        }
+
+        function toggleComplete() {
+            // Реализация отметки о завершении
+            const btn = document.getElementById('complete-btn');
+            const isCompleted = btn.classList.toggle('completed');
+            
+            if (isCompleted) {
+                btn.innerHTML = `<i class="fas fa-check-circle"></i> ${i18n[config.lang].complete}`;
+            } else {
+                btn.innerHTML = `<i class="far fa-check-circle"></i> ${i18n[config.lang].complete}`;
+            }
+        }
+
+        function setLanguage(lang) {
+            setCookie('language', lang, 365);
+            config.lang = lang;
+            applyTranslations();
+            
+            // Перезагружаем темы и если открыта тема, то перезагружаем и ее
+            loadTopics();
+            if (config.currentTopic) {
+                openTopicDetails(config.currentTopic);
+            }
+        }
+
+        function setCookie(name, value, days) {
+            const d = new Date();
+            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + d.toUTCString();
+            document.cookie = name + "=" + value + ";" + expires + ";path=/";
+        }
+
+        function getCookie(name) {
+            const value = "; " + document.cookie;
+            const parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+        }
+        
+    </script>
+</body>
+</html>

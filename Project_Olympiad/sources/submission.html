@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои посылки</title>
+    <script src="js/scriptjs.js" ></script>
+    <link rel="icon" href="icons/fire_icon.jpeg" type="image/jpeg">
+
+    <!-- Prism.js для подсветки + нумерации -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <link rel="stylesheet" href="styles/floating-menu.css">
+    <!-- Скрипт -->
+    <script src="js/floating-menu.js" defer></script>
+
+    <!-- Шрифт -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+      body {
+        margin: 0; padding: 0;
+        font-family: 'Times New Roman', serif;
+        background: #0a0a0a url('icons/icon19.jpg') center/cover no-repeat;
+        color: white;
+        overflow-x: hidden;
+      }
+      header { text-align: center; padding: 20px 0; position: relative; }
+      h1 { margin:0; color:#e8e8e8; }
+
+      /* Список языков */
+      .language-list { display:none; position:absolute; top:20px; right:20px; background:#222; padding:10px; border-radius:5px; z-index: 10; }
+      .language-list li { list-style:none; margin:5px 0; cursor:pointer; color:#ccc; }
+      .language-list li img { margin-left:6px; vertical-align:middle; width:18px; }
+
+      /* Фильтры и поиск */
+      .filters, .search-container { display:flex; justify-content:center; margin:20px 0; gap:10px; }
+      .filter-btn, .pagination-btn, #gotoBtn {
+        padding:8px 15px; background:#333; color:white; border:none; border-radius:5px;
+        cursor:pointer; transition:0.2s; font-size:14px;
+      }
+      .filter-btn.active { background:#4caf50; }
+      .filter-btn:hover:not(.active), .pagination-btn:hover:not(:disabled), #gotoBtn:hover {
+        background:#555;
+      }
+      #searchInput, #pageSearch {
+        padding:8px; border-radius:20px; border:2px solid #4caf50;
+        background:rgba(30,30,30,0.8); color:white; outline:none; font-size:14px;
+      }
+      .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin: 30px 0;
+      }
+
+      .pagination {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        background: rgba(20, 20, 20, 0.6);
+        padding: 10px 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      }
+
+      #pageSearch { width:60px; }
+
+      /* Список посылок */
+      #packages { max-width:800px; margin:0 auto; padding:10px;
+                   background:rgba(22,26,22,0.8); border-radius:10px; }
+      .package {
+        background: linear-gradient(135deg, rgba(34, 40, 34, 0.8), rgba(20, 26, 20, 0.95));
+        border-left: 5px solid #4caf50;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        position: relative;
+      }
+        
+        
+        
+        .package:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+      }      
+      .package h3 { margin:0 0 10px; color:#4da6ff; font-size:1.2em; }
+      .package-details { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+      .package-detail { color:#ccc; font-size:0.9em; }
+      .verdict-container {
+        margin-top: 10px;
+        padding: 8px 14px;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 0.95em;
+        display: inline-block;
+        box-shadow: 0 0 6px rgba(0,0,0,0.4);
+      }
+
+      .accepted {
+        background-color: rgba(76, 175, 80, 0.15);
+        color: #4caf50;
+        border: 1px solid #4caf50;
+      }
+
+      .wrong {
+        background-color: rgba(244, 67, 54, 0.15);
+        color: #f44336;
+        border: 1px solid #f44336;
+      }
+
+      .pending {
+        background-color: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        border: 1px solid #ffc107;
+      }
+
+      .package-info { display:flex; justify-content:space-between; color:#aaa; font-size:0.85em; }
+
+     .show-code-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, #198e07, #1e5722);
+        color: #fff;
+        border: none;
+        padding: 8px 14px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        transition: 0.2s;
+      }
+
+      .show-code-btn:hover {
+        background: linear-gradient(135deg, #25b319, #238f32);
+      }
+
+      /* Модальное окно */
+      .custom-modal {
+        display:none; position:fixed; inset:0;
+        background:rgba(0,0,0,0.8); backdrop-filter:blur(4px);
+        z-index:1000; justify-content:center; align-items:center;
+      }
+      .custom-modal-content {
+        background:#1a1a2e; padding:20px 25px; border-radius:12px;
+        width:90%; max-width:900px; max-height:85vh; overflow:hidden;
+        display:flex; flex-direction:column; position:relative;
+      }
+      .close-custom-modal {
+        position:absolute; top:15px; right:20px; font-size:28px;
+        color:#aaa; cursor:pointer; transition:0.2s;
+      }
+      .close-custom-modal:hover { color:#fff; }
+      .modal-header {
+        display:flex; justify-content:space-between; align-items:center;
+        border-bottom:1px solid #444; padding-bottom:10px; margin-bottom:10px;
+      }
+      .modal-language {
+        background:#0d7377; color:#fff; padding:4px 10px; border-radius:20px;
+        font-size:13px; font-weight:bold;
+      }
+      .code-container { 
+        flex:1; 
+        overflow:auto; 
+        height: 70vh;
+      }
+      pre[class*="language-"] {
+        margin:0; padding:1em; background:#1e1e1e; border-radius:8px;
+        overflow:auto;
+        font-family:'Fira Code', monospace; font-size:15px;
+        line-height:1.5; box-shadow:0 4px 12px rgba(0,0,0,0.5);
+      }
+      .line-numbers .line-numbers-rows { border-right:1px solid #444; color:#858585; }
+      
+      /* Адаптивность */
+      @media (max-width: 600px) {
+        .package-details {
+          grid-template-columns: 1fr;
+        }
+        .verdict-container {
+          margin-right: 0;
+          display: block;
+        }
+        .show-code-btn {
+          position: static;
+          margin-top: 10px;
+          width: 100%;
+        }
+      }
+              /* Стили для номера посылки */
+     .submission-id {
+        font-weight: bold;
+        font-size: 1em;
+        color: #ffcc00;
+        background: rgba(30, 30, 0, 0.4);
+        padding: 4px 10px;
+        border-radius: 12px;
+        border: 1px solid #ffcc00;
+      }
+
+
+        /* Ссылки на задачи и пользователей */
+        .package a {
+            color: #4da6ff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .package a:hover {
+            color: #80c1ff;
+            text-decoration: underline;
+        }
+
+        /* Улучшение внешнего вида */
+        .package {
+            background: linear-gradient(to right, rgba(40,44,40,0.7), rgba(30,34,30,0.9));
+            border-left: 4px solid #4caf50;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .package::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(76,175,80,0.1), transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Иконки в деталях */
+        .package-detail::before {
+            content: '•';
+            margin-right: 5px;
+            color: #4da6ff;
+        }
+        .copy-code-btn {
+        background-color: #2e7d32;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        font-size: 13px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      .copy-code-btn:hover {
+        background-color: #388e3c;
+      }
+
+      
+      
+    </style>
+</head>
+<body>
+
+  <!-- Floating Menu -->
+  <div class="floating-menu-container">
+    <div class="floating-menu-button" id="floatingMenuButton">
+      <img src="icons/icon14.png" alt="Menu">
+    </div>
+    <div id="floatingMenuContent" class="floating-menu-content">
+      <a href="profile?login={{ user_login }}" class="menu-item">
+        <img src="icons/icon8.png" alt="Profile">
+        <span id="menuProfileText">Мой профиль</span>
+      </a>
+      <a href="compete.html" class="menu-item">
+        <img src="icons/icon7.png" alt="Competition">
+        <span id="menuCompeteText">Соревнование</span>
+      </a>
+      <a href="index.html" class="menu-item">
+        <img src="icons/icon9.png" alt="Archive">
+        <span id="menuArchiveText">Архив задач</span>
+      </a>
+      <a href="news.html" class="menu-item">
+        <img src="icons/icon10.png" alt="News">
+        <span id="menuNewsText">Новости</span>
+      </a>
+      <a href="submission.html" class="menu-item">
+        <img src="icons/icon11.png" alt="Submissions">
+        <span id="menuSubmissionsText">Мои посылки</span>
+      </a>
+      <a href="#" class="menu-item" onclick="openAbout()">
+        <img src="icons/icon15.png" alt="About">
+        <span id="menuAboutText">О нас</span>
+      </a>
+      <a href="#" class="menu-item" onclick="logout()">
+        <img src="icons/icon12.png" alt="Logout">
+        <span id="menuLogoutText">Выход</span>
+      </a>
+    </div>
+  </div>
+
+  <header>
+    <h1 id="pageTitle">Мои посылки</h1>
+    <button id="langBtn" onclick="toggleLanguageList()" style="position:absolute; top:20px; right:20px;">Язык</button>
+    <ul id="languageList" class="language-list">
+      <li onclick="changeLanguage('english')">English <img src="icons/english_flag.png"></li>
+      <li onclick="changeLanguage('russian')">Русский <img src="icons/russian_flag.png"></li>
+      <li onclick="changeLanguage('tajik')">Тоҷикӣ <img src="icons/tajik_flag.png"></li>
+    </ul>
+  </header>
+
+  <div class="filters">
+    <button class="filter-btn active" data-tab="all" onclick="changeTab('all')" id="filterAll">Все</button>
+    <button class="filter-btn" data-tab="mine" onclick="changeTab('mine')" id="filterMine">Мои</button>
+    <button class="filter-btn" data-tab="friends" onclick="changeTab('friends')" id="filterFriends">Друзья</button>
+  </div>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Поиск…">
+  </div>
+
+  <div id="packages"></div>
+
+  <div class="pagination-container">
+    <div class="pagination" id="pagination">
+      <button id="prevPageBtn" class="pagination-btn">« Назад</button>
+      <span id="pageIndicator" style="margin: 0 10px; color: #ccc;"></span>
+      <button id="nextPageBtn" class="pagination-btn">Вперёд »</button>
+      <input type="text" id="pageSearch" placeholder="№" />
+      <button id="gotoBtn">GO</button>
+    </div>
+  </div>
+
+  <!-- Модалка -->
+  <div id="customCodeModal" class="custom-modal">
+    <div class="custom-modal-content">
+      <span class="close-custom-modal" onclick="closeCustomModal()">&times;</span>
+      <div class="modal-header">
+        <h2 id="modalTitle">Код посылки</h2>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button class="copy-code-btn" id="copyBtn" onclick="copyCode()"></button>
+          <div class="modal-language" id="modalLanguage"></div>
+        </div>
+      </div>
+      
+      <div class="code-container">
+        <pre class="line-numbers"><code id="codeDisplay" class="language-plaintext">// код</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Инициализация Prism
+    Prism.plugins.autoloader.languages_path = 
+      'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/';
+
+    // Мультиязычность
+    const i18n = {
+      russian: {
+        pageTitle: "Мои посылки",
+        filterAll: "Все",
+        filterMine: "Мои",
+        filterFriends: "Друзья",
+        searchPlaceholder: "Поиск…",
+        pagePlaceholder: "№",
+        goButton: "GO",
+        prevPageBtn: "« Назад",
+        nextPageBtn: "Вперёд »",
+        pageIndicator: "Страница {page} из {total}",
+        modalTitle: "Код посылки",
+        noResults: "Ничего не найдено",
+        loadingError: "Ошибка загрузки данных",
+        codeError: "Ошибка загрузки кода",
+        userLabel: "Пользователь:",
+        timeLabel: "Время:",
+        memoryLabel: "Память:",
+        languageLabel: "Язык:",
+        codeBtn: "Код",
+        menuProfileText: "Мой профиль",
+        menuCompeteText: "Соревнование",
+        menuArchiveText: "Архив задач",
+        menuNewsText: "Новости",
+        menuSubmissionsText: "Мои посылки",
+        menuAboutText: "О нас",
+        menuLogoutText: "Выход",
+        copyBtn: "📋 Копировать",
+        copySuccess: "✅ Скопировано!",
+        langBtn: "Язык"
+      },
+      english: {
+        pageTitle: "My Submissions",
+        filterAll: "All",
+        filterMine: "Mine",
+        filterFriends: "Friends",
+        searchPlaceholder: "Search…",
+        pagePlaceholder: "#",
+        goButton: "GO",
+        prevPageBtn:'« Prev',
+        nextPageBtn:'Next »',
+        pageIndicator: "Page {page} of {total}",
+        modalTitle: "Submission Code",
+        noResults: "No results found",
+        loadingError: "Error loading data",
+        codeError: "Error loading code",
+        userLabel: "User:",
+        timeLabel: "Time:",
+        memoryLabel: "Memory:",
+        languageLabel: "Language:",
+        codeBtn: "Code",
+        menuProfileText: "My Profile",
+        menuCompeteText: "Competition",
+        menuArchiveText: "Problem Archive",
+        menuNewsText: "News",
+        menuSubmissionsText: "My Submissions",
+        menuAboutText: "About",
+        menuLogoutText: "Logout",
+        copyBtn: "📋 Copy",
+        copySuccess: "✅ Copied!",
+
+        langBtn: "Language"
+      },
+      tajik: {
+        pageTitle: "Посилкаҳои ман",
+        filterAll: "Ҳама",
+        filterMine: "Ман",
+        filterFriends: "Дӯстон",
+        searchPlaceholder: "Ҷустуҷӯ…",
+        pagePlaceholder: "№",
+        goButton: "Гузариш",
+        prevPageBtn: "« Қафо",
+        nextPageBtn: "Пеш »",
+        pageIndicator: "Саҳифа {page} аз {total}",
+        modalTitle: "Рамзи посилка",
+        noResults: "Чизе ёфт нашуд",
+        loadingError: "Хатоги дар боргирии маълумот",
+        codeError: "Хатоги дар боргирии рамз",
+        userLabel: "Корбар:",
+        timeLabel: "Вақт:",
+        memoryLabel: "Хофиза:",
+        languageLabel: "Забон:",
+        codeBtn: "Рамз",
+        menuProfileText: "Профили ман",
+        menuCompeteText: "Мусобиқа",
+        menuArchiveText: "Архиви масъалаҳо",
+        menuNewsText: "Ахбор",
+        menuSubmissionsText: "Посилкаҳои ман",
+        menuAboutText: "Дар бораи мо",
+        menuLogoutText: "Баромад",
+        copyBtn: "📋 Нусхабардорӣ",
+        copySuccess: "✅ Нусхабардорӣ шуд!",
+        langBtn: "Забон"
+      }
+    };
+    function copyCode() {
+      const codeEl = document.getElementById('codeDisplay');
+      const codeText = codeEl.textContent;
+      const lang = getCurrentLanguage();
+
+      navigator.clipboard.writeText(codeText).then(() => {
+        const btn = document.getElementById('copyBtn');
+        const original = i18n[lang].copyBtn;
+        btn.textContent = i18n[lang].copySuccess;
+        setTimeout(() => btn.textContent = original, 1500);
+      }).catch(err => {
+        alert('Clipboard error: ' + err);
+      });
+    }
+
+    // Применение языка
+    function applyLanguage(lang) {
+      Object.entries(i18n[lang]).forEach(([key, txt]) => {
+        const el = document.getElementById(key);
+        if (!el) return;
+
+        if (el.tagName === 'INPUT') {
+            el.placeholder = txt;
+        } else {
+            el.textContent = txt;
+        }
+        // const copyBtn = document.getElementById('copyBtn');
+        // if (copyBtn) copyBtn.textContent = i18n[lang].copyBtn;
+
+    });      
+      // Обновляем пагинацию
+      updatePagination();
+    }
+
+    // Получение текущего языка
+    function getCurrentLanguage() {
+      const match = document.cookie.match(/(?:^|; )language=([^;]+)/);
+      return match ? decodeURIComponent(match[1]) : 'russian';
+    }
+
+    // Смена языка
+    async function changeLanguage(lang) {
+      await fetch('/api/set_language', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({language: lang})
+      });
+      document.cookie = `language=${encodeURIComponent(lang)}; path=/; max-age=31536000`;
+      applyLanguage(lang);
+      loadPackages();
+      toggleLanguageList();
+    }
+
+    function toggleLanguageList() {
+      const ul = document.getElementById('languageList');
+      ul.style.display = ul.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function closeLanguageList() {
+      document.getElementById('languageList').style.display = 'none';
+    }
+
+    // Закрытие списка языков при клике вне его
+    document.addEventListener('click', (e) => {
+      const langList = document.getElementById('languageList');
+      const langBtn = document.getElementById('langBtn');
+      
+      if (langList.style.display === 'block' && 
+          !langList.contains(e.target) && 
+          e.target !== langBtn) {
+        closeLanguageList();
+      }
+    });
+
+    const languageMapping = {
+      'C++': 'cpp', 'Python': 'python', 'Java': 'java', 'C': 'c',
+      'JavaScript': 'javascript', 'C#': 'csharp', 'Rust': 'rust',
+      'Go': 'go', 'PHP': 'php', 'SQL': 'sql', 'Ruby': 'ruby',
+      'Swift': 'swift', 'Kotlin': 'kotlin', 'TypeScript': 'typescript'
+    };
+
+    let currentTab = 'all', currentPage = 1, currentSearch = '';
+    const perPage = 5;
+    let totalPackages = 0, packagesData = [], userLogin = '';
+
+    // Получение логина пользователя
+    fetch('/get_login')
+      .then(r => {
+        if (!r.ok) throw new Error('Ошибка сети');
+        return r.json();
+      })
+      .then(d => { 
+        userLogin = d.login; 
+        loadPackages(); 
+      })
+      .catch(e => {
+        console.error('Ошибка при получении логина:', e);
+        userLogin = 'Гость';
+        loadPackages();
+      });
+
+    // Обработчики событий
+    document.getElementById('searchInput').addEventListener('input', e => { 
+      currentSearch = e.target.value; 
+      currentPage = 1; 
+      loadPackages(); 
+    });
+    
+    document.getElementById('pageSearch').addEventListener('keypress', e => {
+      if (e.key === 'Enter') document.getElementById('gotoBtn').click();
+    });
+    
+    document.getElementById('gotoBtn').addEventListener('click', () => {
+      const p = parseInt(document.getElementById('pageSearch').value);
+      const totalPages = Math.ceil(totalPackages / perPage);
+      
+      if (!isNaN(p) && p >= 1 && p <= totalPages) { 
+        currentPage = p; 
+        loadPackages(); 
+      } else {
+        const lang = getCurrentLanguage();
+        alert(i18n[lang].pageIndicator.replace('{page}', 1).replace('{total}', totalPages));
+      }
+    });
+
+    document.getElementById('prevPageBtn').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        loadPackages();
+      }
+    });
+
+    document.getElementById('nextPageBtn').addEventListener('click', () => {
+      const totalPages = Math.ceil(totalPackages / perPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadPackages();
+      }
+    });
+
+    function changeTab(tab) {
+      currentTab = tab; 
+      currentPage = 1;
+      document.querySelectorAll('.filter-btn').forEach(b => 
+        b.classList.toggle('active', b.dataset.tab === tab)
+      );
+      loadPackages();
+    }
+
+    // Загрузка посылок
+    function loadPackages() {
+        fetch(`/get_packages?page=${currentPage}&limit=${perPage}&search=${encodeURIComponent(currentSearch)}&tab=${currentTab}`)
+        .then(r => {
+            if (!r.ok) throw new Error(i18n[getCurrentLanguage()].loadingError);
+            return r.json();
+        })
+        .then(data => { 
+            totalPackages = data.total; 
+            packagesData = data.packages; 
+            renderPackages(); 
+            updatePagination();
+        })
+        .catch(e => {
+            console.error('Ошибка:', e);
+            const lang = getCurrentLanguage();
+            document.getElementById('packages').innerHTML = `
+                <p style="text-align:center;color:#f44336;">${i18n[lang].loadingError}: ${e.message}</p>
+            `;
+        });
+    }
+
+    // Рендеринг посылок
+    function renderPackages() {
+    const container = document.getElementById('packages'); 
+    container.innerHTML = '';
+    
+    const lang = getCurrentLanguage();
+    const langData = i18n[lang];
+    
+    if (!packagesData.length) { 
+        container.innerHTML = `<p style="text-align:center;">${langData.noResults}</p>`; 
+        return; 
+    }
+    
+    packagesData.forEach(pkg => {
+        const el = document.createElement('div'); 
+        el.className = 'package';
+        
+        const ts = new Date(pkg.timestamp).toLocaleString('ru-RU');
+        const verdictClass = 
+          pkg.verdict === 'Accepted' ? 'accepted' :
+          pkg.verdict.includes('error') ? 'wrong' : 'pending';
+        
+        // Ссылки на задачу и профиль пользователя
+        el.innerHTML = `
+          <h3><a href="task?id=${pkg.task_id}">${pkg.name}</a></h3>
+          <div class="package-details">
+            <div class="package-detail">${langData.userLabel} <a href="profile?login=${pkg.user}">${pkg.user}</a></div>
+            <div class="package-detail">${langData.timeLabel} ${pkg.time} мс</div>
+            <div class="package-detail">${langData.memoryLabel} ${pkg.memory} КБ</div>
+            <div class="package-detail">${langData.languageLabel} ${pkg.language}</div>
+          </div>
+          <div class="verdict-container ${verdictClass}">
+            ${pkg.verdict}
+          </div>
+          <div class="package-info">
+            <span>${ts}</span>
+            <span class="submission-id">#${pkg.id}</span>
+          </div>
+        `;
+        
+        const btn = document.createElement('button'); 
+        btn.className = 'show-code-btn';
+        btn.textContent = langData.codeBtn; 
+        btn.onclick = () => showCode(pkg.id, pkg.language);
+        el.appendChild(btn); 
+        container.appendChild(el);
+    });
+  }
+    // Обновление пагинации
+    function updatePagination() {
+      const lang = getCurrentLanguage();
+      const totalPages = Math.ceil(totalPackages / perPage);
+      const pageText = i18n[lang].pageIndicator
+        .replace('{page}', currentPage)
+        .replace('{total}', totalPages);
+      
+      document.getElementById('pageIndicator').textContent = pageText;
+      document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+      document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+      document.getElementById('pageSearch').value = currentPage;
+    }
+
+    // Показ кода
+    function showCode(id, language) {
+      fetch(`/get_code?submission_id=${id}`)
+        .then(r => {
+          if (!r.ok) throw new Error(i18n[getCurrentLanguage()].codeError);
+          return r.json();
+        })
+        .then(d => {
+          const codeEl = document.getElementById('codeDisplay');
+          const langEl = document.getElementById('modalLanguage');
+          
+          // Обновляем код
+          codeEl.textContent = d.code || '// Код недоступен';
+          
+          // Устанавливаем правильный класс языка
+          const pl = languageMapping[language] || 'plaintext';
+          codeEl.className = `language-${pl}`;
+          
+          // Подсвечиваем синтаксис
+          Prism.highlightElement(codeEl);
+          
+          // Обновляем язык в модалке
+          langEl.textContent = language;
+          
+          // Показываем модальное окно
+          document.getElementById('customCodeModal').style.display = 'flex';
+        })
+        .catch(e => {
+          console.error('Ошибка:', e);
+          alert(`${i18n[getCurrentLanguage()].codeError}: ${e.message}`);
+        });
+    }
+
+    function closeCustomModal() { 
+      document.getElementById('customCodeModal').style.display = 'none'; 
+    }
+
+  
+    // Закрытие модалки по клику вне окна и ESC
+    document.addEventListener('click', (e) => {
+      const modal = document.getElementById('customCodeModal');
+      if (e.target === modal) closeCustomModal();
+    });
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeCustomModal();
+    });
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', () => {
+      const currentLang = getCurrentLanguage();
+      applyLanguage(currentLang);
+      loadPackages();
+      Prism.highlightAll();
+    });
+
+    // Функции меню
+    function openAbout() {
+      // Реализация открытия окна "О нас"
+      alert(i18n[getCurrentLanguage()].menuAboutText);
+    }
+
+    function logout() {
+      // Реализация выхода
+      if (confirm(i18n[getCurrentLanguage()].menuLogoutText + "?")) {
+        window.location.href = "/logout";
+      }
+    }
+  </script>
+</body>
+</html>

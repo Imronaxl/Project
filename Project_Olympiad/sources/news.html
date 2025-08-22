@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="scriptjs.js" ></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tajik Fire</title>
+    <link rel="icon" href="icons/fire_icon.jpeg" type="image/jpeg">
+
+    <style>
+            body {
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            background-image: url('icons/icon2.jpg');
+            background-color: #070708; /* Черный фон */
+            color: #ccc; /* Светло-серый текст для общего чтения */
+            overflow-x: hidden;
+            text-align: center;
+        }
+      
+            
+            p {
+                font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+                color: #ccc;
+            }
+            
+            .news-font {
+                max-height: 0; /* Начальная высота 0 */
+                overflow: hidden; /* Скрыть содержимое, которое не помещается в область видимости */
+                transition: max-height 1.5s ease; /* Анимация изменения высоты */
+            }
+            .news-font1 {
+                transition: max-height 1.5s ease; /* Анимация изменения высоты */
+            }
+            .news-font.open {
+                max-height: 1000px; /* Максимальная высота, чтобы отобразить весь текст */
+            }
+        
+        /*    box-shadow: 0 2px 5px #7a71f7; /* Добавляем тень снизу */
+            
+    
+        .style_data {
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+            color:#ffffff;
+        }
+       
+       
+        .show-btn, .hide-btn {
+            background-color: rgba(41, 41, 41, 0.0); /* Пример значения с немного меньшей прозрачностью */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        img {
+            width: 20px;
+            height: 20px;
+        }
+        
+
+        .container {
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px; /* Увеличение внутренних отступов для улучшенного визуального эффекта */
+            border-radius: 40px; /* Закругление углов */
+            background-color: rgba(11, 11, 64, 0.526); /* Пример значения с немного меньшей прозрачностью */
+            color: #fff; /* Цвет текста */
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Анимация для движения и тени */
+        }
+
+        .container:hover {
+            transform: translateY(-5px); /* Поднимаем контейнер немного вверх при наведении */
+            box-shadow: 
+                2px 2px 2px rgb(8, 0, 119), /* Тень справа снизу */
+                -2px -2px 2px rgb(0, 14, 123), /* Тень слева сверху */
+                2px -2px 2px rgba(254, 254, 254), /* Тень справа сверху */
+                -2px 2px 2px rgb(0, 10, 101); /* Тень слева снизу */
+        }
+
+        /* Обновленный стиль для кнопок "Показать" и "Скрыть" */
+        .show-btn, .hide-btn {
+            background-color: rgba(22, 48, 109, 0.5); /* Пример значения с немного меньшей прозрачностью */
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .show-btn:hover, .hide-btn:hover {
+            background-color: rgb(2, 5, 89); /* Пример значения без прозрачности при наведении */
+        }
+    </style>
+</head>
+<body>
+    <div id="loader-wrapper">
+        <div class="cube">
+            <div class="cube-face front"></div>
+            <div class="cube-face back"></div>
+            <div class="cube-face left"></div>
+            <div class="cube-face right"></div>
+            <div class="cube-face top"></div>
+            <div class="cube-face bottom"></div>
+        </div>
+        <div id="progressText">0%</div>
+    </div>
+    <div id="mySidebar" class="sidebar">
+        <a href="my_profile.html" class="menu-item">
+            <img src="icons/icon8.png" alt="Competition Icon">
+            Мой профиль
+        </a>
+        <a href="compete.html" class="menu-item">
+            <img src="icons/icon7.png" alt="Competition Icon">
+            Соревнование
+        </a>
+        <a href="index.html" class="menu-item">
+            <img src="icons/icon9.png" alt="Competition Icon">
+            Архив задач
+        </a>
+        <a href="news.html" class="menu-item">
+            <img src="icons/icon10.png" alt="Competition Icon"  style="width: 28px; height: 28px;">
+            Новости
+        </a>
+        <a href="my_submit.html" class="menu-item">
+            <img src="icons/icon11.png" alt="Competition Icon">
+            Мои посылки
+        </a>
+        <a href="#" class="about-btn menu-item" onclick="openAbout()">
+            <img src="icons/icon15.png" alt="Competition Icon" style="width: 30px; height: 25px;">
+
+            О нас
+        </a>
+
+        <a href="#" class="logout-btn menu-item" onclick="logout()">
+            <img src="icons/icon12.png" alt="Competition Icon">
+            Выход
+        </a>
+    </div>
+    <ul id="languageList" class="language-list">
+        <li onclick="changeLanguage('english')">
+            English
+            <img src="icons/english_flag.png" alt="English Flag">
+        </li>
+        <li onclick="changeLanguage('russian')">
+            Русский
+            <img src="icons/russian_flag.png" alt="Russian Flag">
+        </li>
+        <li onclick="changeLanguage('tajik')">
+            Тоҷикӣ
+            <img src="icons/tajik_flag.png" alt="Tajik Flag">
+        </li>
+    </ul>
+<header>
+
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAbout()">&times;</span>
+            <h2>О нас</h2>
+            <p>Приветствуем вас в мире Tajik Fire - месте, где идеи превращаются в реальность, а навыки взлетают к новым высотам. Мы не просто платформа для соревнований, мы сообщество людей, которые разделяют страсть к программированию и стремятся к развитию.</p>
+            <p>Наша миссия - вдохновлять и обучать, открывать новые горизонты и помогать вам достичь своих целей. Мы верим в силу знаний и в том, что каждый может стать лучше, если у него есть поддержка и ресурсы.</p>
+            <p>Если у вас есть идеи, вопросы или предложения, не стесняйтесь обращаться к нам. Мы здесь, чтобы помочь вам в каждом шаге вашего пути.</p>
+            <p>Присоединяйтесь к Tajik Fire - месте, где рождаются идеи и совершаются открытия!</p>
+            <ul>
+                <li>Телефон техподдержки: +992900085961</li>
+                <li>Электронная почта: gimron34@gmail.com</li>
+                <li>Телеграмм канал: <a href=" /tajikk_fire">Tajik Fire в Telegram</a></li>
+
+            </ul>
+            <!-- <p>Также, если вам хочется поддержать нас, вы можете это сделать, оплатив нам  через номер карты:</p>
+            <p>Номер карты для оплаты: **** **** **** **** (подставьте номер карты)</p> -->
+        </div>
+    </div>
+    <div class="menu" onclick="toggleNav()">
+        <img src="icons/icon14.png" alt="Открыть меню" style="width: 40px; height: 40px;">
+        
+    </div>
+    <div id="userLogin" class="user-login"></div>
+    <h1 class="news_point">Новости</h1>
+</header>
+<button onclick="showLanguagePopup()" class="language-btn">Выбрать язык</button>
+
+<div class="container">
+
+</div>
+<div class="container">
+    <div class="news-container" id="news3Container" onmouseover="highlightNews(this)" onmouseout="unhighlightNews(this)">
+        <h2 class="style_data">30.05.2024</h2>
+        <p class="news-font1">Cайт готов!...</p>
+
+        <p class="news-font" id="news3Full" style="display: none;">Ура! Наш сайт теперь готов, вы можете учится и решать интеренесные задачи, и со временем задач будет больше, следим за новостями! Всем успехов !</p>
+        <button class="show-btn" onclick="showFullText('news3')">
+            <img src="icons/show_more.png" alt="Иконка показать"> 
+        </button>
+        <button class="hide-btn" onclick="hideFullText('news3')" style="display: none;">
+            <img src="icons/hide_icon.png" alt="Иконка скрыть"> 
+        </button>
+    </div>
+</div>
+<div class="container">
+    <div class="news-container" id="news1Container" onmouseover="highlightNews(this)" onmouseout="unhighlightNews(this)">
+        <h2 class="style_data">17.04.2024</h2>
+        <p class="news-font1">Сайт уже почти...</p>
+
+        <p class="news-font" id="news1Full" style="display: none;">Сайт уже почти на пути к успеху, Следим за новостями !!! </p>
+        <button class="show-btn" onclick="showFullText('news1')">
+            <img src="icons/show_more.png" alt="Иконка показать"> 
+        </button>
+        <button class="hide-btn" onclick="hideFullText('news1')" style="display: none;">
+            <img src="icons/hide_icon.png" alt="Иконка скрыть"> 
+        </button>
+    </div>
+</div>
+<div class="container">
+    <div class="news-container" id="news2Container" onmouseover="highlightNews(this)" onmouseout="unhighlightNews(this)">
+        <h2 class="style_data">12.04.2024</h2>
+        <p class="news-font1">О да! Теперь сайт...</p>
+
+        <p class="news-font" id="news2Full" style="display: none;">О да! Теперь сайт Tajik Fire готов к работе.</p>
+        <button class="show-btn" onclick="showFullText('news2')">
+            <img src="icons/show_more.png" alt="Иконка показать"> 
+        </button>
+        <button class="hide-btn" onclick="hideFullText('news2')" style="display: none;">
+            <img src="icons/hide_icon.png" alt="Иконка скрыть"> 
+        </button>
+    </div>
+</div>
+<script>fetch(' /get_news')
+    .then(response => response.json()) // Преобразуем ответ в формат JSON
+    .then(newsData => {
+        const newsContainer = document.querySelector('.container');
+        const newsItems = newsData; // Уже JSON-объект
+
+        newsItems.forEach(newsItem => {
+            const newsElement = document.createElement('pre'); // Используем тег <pre> для сохранения форматирования
+            newsElement.classList.add('news_font');
+            newsElement.textContent = newsItem; // Просто добавляем текст новости в элемент
+            newsContainer.appendChild(newsElement);
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+    function changeLanguage(language) {
+        var redirectUrl;
+        switch (language) {
+            case 'english':
+                redirectUrl = 'news2.html';
+                break;
+            case 'russian':
+                redirectUrl = 'news.html';
+                break;
+            case 'tajik':
+                redirectUrl = 'news1.html';
+                break;
+            default:
+                redirectUrl = 'news.html';
+        }
+        window.location.href = redirectUrl;
+    }
+    </script>
+</body>
+</html>

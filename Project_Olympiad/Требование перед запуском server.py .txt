@@ -1,0 +1,5 @@
+Скачать нужные библиотеки:  
+
+Установите переменные окружения на сервере:
+	$env:SMTP_USER=i.gulakhmadov@yandex.ru
+	$env:SMTP_PASSWORD="epvxgxxzotbipefl"

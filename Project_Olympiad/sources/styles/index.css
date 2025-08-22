@@ -1,0 +1,120 @@
+body {
+    font-family: 'Times New Roman', Times, serif;
+    background-image: url('../icons/icon2.jpg');
+    background-size: cover;
+    background-color: #0a0a0a;
+    color: #ccc; /* Улучшенный контраст */
+    overflow-x: hidden;
+}
+
+
+header {
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+
+
+.container {
+    font-family: Verdana, sans-serif;
+    font-size:16px;
+
+    max-width: 1000px; /* Ширина контейнера */
+    margin: auto; 
+    padding: 10px;
+    padding-left:300px;
+}
+
+.task-column {
+    display: flex;
+    flex-wrap: wrap; /* Задачи будут переноситься на новую строку при достижении конца контейнера */
+}
+
+.task {
+    width: calc(33.33% - 20px); /* Уменьшим ширину задачи для того, чтобы поместилось по три задачи на одну строку */
+    margin-right: 20px;
+    margin-bottom: 20px;
+    background-color: rgb(0, 0, 0);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: 0.3s;
+    border: 2px solid #392f2f;
+    display: flex;
+    flex-direction: column;
+    
+}
+
+.task:hover {
+    border-color: #7a71f7;
+    transform: translateY(-5px);
+}
+
+.task h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.task p {
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
+
+.read-more {
+    background: #221e38;
+    color: white;
+    padding: 8px 12px;
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    align-self: flex-end;
+}
+
+
+.read-more:hover {
+    background: #138b08;
+    transform: scale(1.05);
+}
+
+.about-us {
+    background-color: #f1f1f1;
+    color: #111;
+    padding: 8px 20px;
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    position: absolute;
+    bottom: 20px;
+    left: 100px;
+}
+
+.about-us:hover {
+    background: #4682b4;
+    box-shadow: 0 0 15px #8969e8, 0 0 15px #8969e8, 0 0 15px #8969e8, 0 0 15px #8969e8;
+
+    transform: scale(1.05);
+}
+
+.pagination-btn {
+    background-color: #221e38;
+    color: white;
+    padding: 10px 16px;
+    margin: 4px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+.pagination-btn:hover {
+    background-color: #138b08;
+    transform: scale(1.05);
+}
+.pagination-btn:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    transform: none;
+}

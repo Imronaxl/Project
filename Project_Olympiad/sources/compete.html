@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="scriptjs.js" ></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,  maximum-scale=1, user-scalable=no">
+    <title>Раздел в разработке</title>
+    <!-- Установка иконки -->
+    <link rel="icon" href="icons/fire_icon.jpeg" type="image/jpeg">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('icons/icon2.jpg');
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            background-color: #000000; /* Light gray background */
+            color: #333; /* Dark text color */
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #fff; /* White background */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h3 {
+            color: #ff6f61; /* Red color for headings */
+        }
+
+        header {
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .compete_point {
+            margin-top: 0px;
+            color: #ffffff; /* Red color for headings */
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: rgba(77, 70, 70, 0.5); /* Light white background with transparency */
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(243, 241, 241, 0.1);
+        }
+
+        h1 {
+            color: #140c06; /* Dark brown color for main heading */
+            margin-top: 0px;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        @keyframes zastavka {
+            0% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            75% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <div id="loader-wrapper">
+        <div class="cube">
+            <div class="cube-face front"></div>
+            <div class="cube-face back"></div>
+            <div class="cube-face left"></div>
+            <div class="cube-face right"></div>
+            <div class="cube-face top"></div>
+            <div class="cube-face bottom"></div>
+        </div>
+        <div id="progressText">0%</div>
+    </div>
+    <div id="mySidebar" class="sidebar">
+        <a href="my_profile.html" class="menu-item">
+                <img src="icons/icon8.png" alt="Competition Icon">
+                Мой профиль
+            </a>
+            <a href="compete.html" class="menu-item">
+                <img src="icons/icon7.png" alt="Competition Icon">
+                Соревнование
+            </a>
+            <a href="index.html" class="menu-item">
+                <img src="icons/icon9.png" alt="Competition Icon">
+                Архив задач
+            </a>
+            <a href="news.html" class="menu-item">
+                <img src="icons/icon10.png" alt="Competition Icon"  style="width: 28px; height: 28px;">
+                Новости
+            </a>
+            <a href="my_submit.html" class="menu-item">
+                <img src="icons/icon11.png" alt="Competition Icon">
+                Мои посылки
+            </a>
+            <a href="#" class="about-btn menu-item" onclick="openAbout()">
+                <img src="icons/icon15.png" alt="Competition Icon" style="width: 30px; height: 25px;">
+    
+                О нас
+            </a>
+    
+            <a href="#" class="logout-btn menu-item" onclick="logout()">
+                <img src="icons/icon12.png" alt="Competition Icon">
+                Выход
+            </a>
+        </div>
+        <ul id="languageList" class="language-list">
+            <li onclick="changeLanguage('english')">
+                English
+                <img src="icons/english_flag.png" alt="English Flag">
+            </li>
+            <li onclick="changeLanguage('russian')">
+                Русский
+                <img src="icons/russian_flag.png" alt="Russian Flag">
+            </li>
+            <li onclick="changeLanguage('tajik')">
+                Тоҷикӣ
+                <img src="icons/tajik_flag.png" alt="Tajik Flag">
+            </li>
+        </ul>
+        <header>
+        <div class="menu" onclick="toggleNav()">
+            <img src="icons/icon14.png" alt="Открыть меню" style="width: 40px; height: 40px;">
+            
+        </div>
+        <div id="aboutModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAbout()">&times;</span>
+                <h2>О нас</h2>
+                <p>Приветствуем вас в мире Tajik Fire - месте, где идеи превращаются в реальность, а навыки взлетают к новым высотам. Мы не просто платформа для соревнований, мы сообщество людей, которые разделяют страсть к программированию и стремятся к развитию.</p>
+                <p>Наша миссия - вдохновлять и обучать, открывать новые горизонты и помогать вам достичь своих целей. Мы верим в силу знаний и в том, что каждый может стать лучше, если у него есть поддержка и ресурсы.</p>
+                <p>Если у вас есть идеи, вопросы или предложения, не стесняйтесь обращаться к нам. Мы здесь, чтобы помочь вам в каждом шаге вашего пути.</p>
+                <p>Присоединяйтесь к Tajik Fire - месте, где рождаются идеи и совершаются открытия!</p>
+                <ul>
+                    <li>Телефон техподдержки: +992900085961</li>
+                    <li>Электронная почта: gimron34@gmail.com</li>
+                    <li>Телеграмм канал: <a href="https://t.me/tajikk_fire">Tajik Fire в Telegram</a></li>
+
+                </ul>
+                <!-- <p>Также, если вам хочется поддержать нас, вы можете это сделать, оплатив нам  через номер карты:</p>
+                <p>Номер карты для оплаты: **** **** **** **** (подставьте номер карты)</p> -->
+            </div>
+        </div>
+    </header>
+    <div id="userLogin" class="user-login"></div>
+    <button onclick="showLanguagePopup()" class="language-btn">Выбрать язык</button>
+
+    <h1 class="compete_point">Соревнование</h1>
+    <div class="container">
+        <h1 style="color:#ffffff">Раздел находится в разработке</h1>
+        <h3 style="color:rgb(255, 251, 251)">Мы работаем над этим разделом. Пожалуйста, вернитесь позже!!!.</h3>
+    </div>   
+
+    <img src="icons/in_progress_icon.png" style="position: fixed; bottom: 20px; left: 20px; width: 170px; height: auto; animation: zastavka 5s infinite;" alt="Icon">
+<script>
+     function changeLanguage(language) {
+        var redirectUrl;
+        switch (language) {
+            case 'english':
+                redirectUrl = 'compete2.html';
+                break;
+            case 'russian':
+                redirectUrl = 'compete.html';
+                break;
+            case 'tajik':
+                redirectUrl = 'compete1.html';
+                break;
+            default:
+                redirectUrl = 'compete.html';
+        }
+        window.location.href = redirectUrl;
+    }
+</script>
+</body>
+</html>

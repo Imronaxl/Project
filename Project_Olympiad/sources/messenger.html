@@ -174,7 +174,7 @@
             padding: 20px;
             overflow-y: auto;
             display: flex;
-            flex-direction: column-reverse;
+            flex-direction: column;
             background: url('pattern.png') center/cover;
         }
         
@@ -396,7 +396,6 @@
             
             // Настраиваем интервалы
             setInterval(loadContacts, 30000); // Обновление контактов каждые 30 сек
-            setInterval(checkNewMessages, 2000); // Проверка новых сообщений каждые 2 сек
             
             // Настройка обработчиков событий
             setupEventListeners();
@@ -463,17 +462,35 @@
                             <span>${contact.username}</span>
                             <span>${contact.last_active || ''}</span>
                         </div>
-                        <div class="last-message">
-                            ${contact.last_message || ''}
-                            ${contact.unread_count > 0 ? 
-                                `<span class="unread-count">${contact.unread_count}</span>` : ''}
-                        </div>
+                        ${tab === 'friends' ? `<div class="last-message">${contact.last_message || ''}${contact.unread_count > 0 ? `<span class=\"unread-count\">${contact.unread_count}</span>` : ''}</div>` : ''}
+                        ${tab === 'requests' ? `<div><button data-accept="${contact.login}">Принять</button> <button data-reject="${contact.login}">Отклонить</button></div>` : ''}
                     </div>
                 `;
                 
-                contactEl.addEventListener('click', () => openChat(contact));
+                if (tab === 'friends') {
+                    contactEl.addEventListener('click', () => openChat(contact));
+                }
                 elements.contactsContainer.appendChild(contactEl);
             });
+
+            if (tab === 'requests') {
+                elements.contactsContainer.querySelectorAll('button[data-accept]').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const from = btn.getAttribute('data-accept');
+                        await fetch('/api/messenger/friends/accept', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({from})});
+                        await loadContacts();
+                    });
+                });
+                elements.contactsContainer.querySelectorAll('button[data-reject]').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const from = btn.getAttribute('data-reject');
+                        await fetch('/api/messenger/friends/reject', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({from})});
+                        await loadContacts();
+                    });
+                });
+            }
         }
         
         // Открытие чата
@@ -485,19 +502,26 @@
             elements.chatAvatar.src = contact.avatar;
             
             // Загружаем сообщения
-            await loadMessages();
+            messages[currentChat] = [];
+            hasMore = true;
+            currentPage = 1;
+            await loadMessages(1);
             
             // Помечаем сообщения как прочитанные
             await markMessagesRead();
         }
         
         // Загрузка сообщений
+        let hasMore = true;
+        let currentPage = 1;
+        const PAGE_SIZE = 50;
+
         async function loadMessages(page = 1) {
             if (!currentChat) return;
             
             try {
                 const response = await fetch(
-                    `/api/messenger/messages?friend=${currentChat}&page=${page}&limit=50`
+                    `/api/messenger/messages?friend=${currentChat}&page=${page}&limit=${PAGE_SIZE}`
                 );
                 const data = await response.json();
                 
@@ -506,8 +530,12 @@
                     messages[currentChat] = [];
                 }
                 
-                // Добавляем новые сообщения в начало
-                messages[currentChat] = [...data.messages, ...messages[currentChat]];
+                // Добавляем новые сообщения в конец для естественного порядка
+                const knownIds = new Set(messages[currentChat].map(m => m.id));
+                const newOnes = data.messages.filter(m => !knownIds.has(m.id));
+                messages[currentChat] = [...newOnes.reverse(), ...messages[currentChat]];
+                hasMore = data.messages.length === PAGE_SIZE;
+                currentPage = page;
                 
                 renderMessages();
             } catch (error) {
@@ -558,28 +586,22 @@
         // Проверка новых сообщений
         async function checkNewMessages() {
             if (!currentChat) return;
-            
             try {
-                const lastMessage = messages[currentChat]?.[0];
+                const lastMessage = messages[currentChat]?.[messages[currentChat].length - 1];
                 const lastId = lastMessage?.id || 0;
-                
-                const response = await fetch(
-                    `/api/messenger/messages?friend=${currentChat}&last_id=${lastId}`
-                );
+                const response = await fetch(`/api/messenger/messages?friend=${currentChat}&last_id=${lastId}`);
                 const data = await response.json();
-                
                 if (data.messages.length > 0) {
-                    // Добавляем новые сообщения
-                    messages[currentChat] = [...data.messages, ...(messages[currentChat] || [])];
+                    const knownIds = new Set(messages[currentChat].map(m => m.id));
+                    const newOnes = data.messages.filter(m => !knownIds.has(m.id));
+                    messages[currentChat] = [...messages[currentChat], ...newOnes];
                     renderMessages();
-                    
-                    // Помечаем как прочитанные
                     await markMessagesRead();
                 }
             } catch (error) {
                 console.error('Ошибка проверки новых сообщений:', error);
             }
-        }   
+        }
         function addLocalMessage(msg) {
             if (!messages[currentChat]) {
                 messages[currentChat] = [];
@@ -598,6 +620,9 @@
 
         
         let pendingMessages = new Set();
+        function showError(msg){
+            alert(msg);
+        }
 
         async function sendMessage() {
             if (!currentChat || (!messageInput.value.trim() && !fileInput.files[0])) return;
@@ -772,10 +797,10 @@
         // Отправка запроса в друзья
         async function sendFriendRequest(login) {
             try {
-                await fetch('/friends_add', {
+                await fetch('/api/messenger/friends/request', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({friend_login: login})
+                    body: JSON.stringify({to: login})
                 });
                 
                 alert(`Запрос в друзья отправлен пользователю ${login}`);
@@ -799,6 +824,12 @@
             // Прикрепление файла
             elements.fileInput.addEventListener('change', () => {
                 if (elements.fileInput.files[0]) {
+                    const f = elements.fileInput.files[0];
+                    if (f.size > 5 * 1024 * 1024) {
+                        alert('Максимальный размер файла 5MB');
+                        elements.fileInput.value = '';
+                        return;
+                    }
                     elements.messageInput.value = `Файл: ${elements.fileInput.files[0].name}`;
                 }
             });
@@ -816,6 +847,9 @@
                         elements.searchBox.style.display = 'none';
                         elements.contactsContainer.style.display = 'block';
                         renderContacts(tab.dataset.tab);
+                        if (tab.dataset.tab === 'friends') {
+                            loadContacts();
+                        }
                     }
                 });
             });
@@ -848,7 +882,7 @@
                 
                 menu.innerHTML = `
                     <div class="menu-item" data-action="delete">Удалить для меня</div>
-                    ${isSent ? `<div class="menu-item" data-action="deleteAll">Удалить для всех</div>` : ''}
+                    ${isSent ? `<div class=\"menu-item\" data-action=\"deleteAll\">Удалить для всех</div>` : ''}
                 `;
                 
                 menu.style.left = `${e.pageX}px`;
@@ -961,6 +995,13 @@
             const data = JSON.parse(e.data);
             if (data.new_messages) {
                 loadNewMessages();
+                loadContacts();
+            }
+            if (data.friend_update) {
+                loadContacts();
+            }
+            if (data.friend_request) {
+                loadContacts();
             }
         });
         

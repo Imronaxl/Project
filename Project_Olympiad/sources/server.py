@@ -18,6 +18,7 @@ from threading import Thread
 import markdown
 from markdown.extensions.toc import TocExtension
 import markdown_katex
+from queue import Queue, Empty
 
 
 # Определяем блокировку для синхронизации доступа к очереди запросов
@@ -31,8 +32,12 @@ app.config.from_object(__name__)
 UPLOAD_FOLDER = 'sources/static/avatars'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2MB
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # Global limit 5MB to allow chat attachments
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Storage for messenger attachments
+MESSAGE_UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+os.makedirs(MESSAGE_UPLOAD_FOLDER, exist_ok=True)
 
 # Конфигурация
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1668,6 +1673,330 @@ def get_topic_meta(topic_id):
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# ==========================
+# Messenger: helpers & SSE
+# ==========================
+
+# Очереди событий для SSE по пользователям
+event_queues = {}
+event_lock = threading.Lock()
+
+def get_event_queue(login):
+    with event_lock:
+        if login not in event_queues:
+            event_queues[login] = Queue()
+        return event_queues[login]
+
+def notify_user(login, payload):
+    try:
+        q = get_event_queue(login)
+        q.put(payload)
+    except Exception as e:
+        print(f"notify_user error for {login}: {e}")
+
+def users_are_blocked(sender_login, receiver_login):
+    blocked_a = db_query(
+        'SELECT 1 FROM blocked_users WHERE blocker_login = ? AND blocked_login = ?',
+        (receiver_login, sender_login),
+        fetchone=True
+    )
+    blocked_b = db_query(
+        'SELECT 1 FROM blocked_users WHERE blocker_login = ? AND blocked_login = ?',
+        (sender_login, receiver_login),
+        fetchone=True
+    )
+    return bool(blocked_a or blocked_b)
+
+def format_message_row_for(login_viewer, row):
+    message_id, sender_login, receiver_login, text, ts, status, request_id, del_sender, del_receiver, file_path, file_size, mime_type = row
+    if login_viewer == sender_login and del_sender:
+        return None
+    if login_viewer == receiver_login and del_receiver:
+        return None
+    is_file = file_path is not None
+    file_url = None
+    if is_file:
+        file_url = f"/static/uploads/{os.path.basename(file_path)}"
+    return {
+        'id': message_id,
+        'request_id': request_id,
+        'sender': sender_login,
+        'text': text,
+        'time': ts,
+        'status': status,
+        'is_file': is_file,
+        'file_url': file_url,
+        'mime_type': mime_type
+    }
+
+@app.route('/api/messenger/events')
+def messenger_events():
+    login = request.cookies.get('saved_name')
+    token = request.cookies.get('auth_token')
+    if not validate_credentials(login, token):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    def event_stream(user_login):
+        q = get_event_queue(user_login)
+        yield f"data: {json.dumps({'heartbeat': True})}\n\n"
+        while True:
+            try:
+                payload = q.get(timeout=25)
+                yield f"data: {json.dumps(payload)}\n\n"
+            except Empty:
+                yield f"data: {json.dumps({'heartbeat': True})}\n\n"
+
+    headers = {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+    }
+    return Response(event_stream(login), headers=headers)
+
+# =============================
+# Messenger: core API endpoints
+# =============================
+
+@app.route('/api/messenger/send', methods=['POST'])
+@protected_route
+def messenger_send():
+    sender_login = request.cookies.get('saved_name')
+    receiver_login = request.form.get('receiver')
+    text = (request.form.get('message') or '').strip()
+    request_id = request.form.get('request_id')
+    file = request.files.get('file')
+
+    if not receiver_login or (not text and not file):
+        return jsonify({'success': False, 'error': 'Missing parameters'}), 400
+
+    if users_are_blocked(sender_login, receiver_login):
+        return jsonify({'success': False, 'error': 'User blocked'}), 403
+
+    if file:
+        file.stream.seek(0, os.SEEK_END)
+        size_bytes = file.stream.tell()
+        file.stream.seek(0)
+        if size_bytes > 5 * 1024 * 1024:
+            return jsonify({'success': False, 'error': 'File too large'}), 400
+
+        count_today = db_query(
+            "SELECT COUNT(*) FROM messages WHERE sender_login = ? AND file_path IS NOT NULL AND date(timestamp) = date('now')",
+            (sender_login,),
+            fetchone=True
+        )[0]
+        if count_today >= 5:
+            return jsonify({'success': False, 'error': 'Daily file limit reached'}), 429
+
+    if request_id:
+        existing = db_query('SELECT id FROM messages WHERE request_id = ?', (request_id,), fetchone=True)
+        if existing:
+            return jsonify({'success': True, 'duplicate': True, 'message_id': existing[0]})
+
+    saved_path = None
+    mime_type = None
+    file_size = None
+    if file:
+        filename = secure_filename(file.filename)
+        unique_name = f"{sender_login}_{int(time.time())}_{filename}"
+        saved_path = os.path.join(MESSAGE_UPLOAD_FOLDER, unique_name)
+        file.save(saved_path)
+        mime_type = file.mimetype
+        file_size = os.path.getsize(saved_path)
+
+    db_query(
+        'INSERT INTO messages (sender_login, receiver_login, message, status, request_id, file_path, file_size, mime_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        (sender_login, receiver_login, text if text else (file.filename if file else ''), 'sent', request_id, saved_path, file_size, mime_type),
+        commit=True
+    )
+    new_id = db_query('SELECT last_insert_rowid()', fetchone=True)[0]
+
+    notify_user(receiver_login, {'new_messages': True})
+    return jsonify({'success': True, 'message_id': new_id, 'duplicate': False})
+
+
+@app.route('/api/messenger/messages')
+@protected_route
+def messenger_messages():
+    login = request.cookies.get('saved_name')
+    friend = request.args.get('friend')
+    if not friend:
+        return jsonify({'messages': []})
+
+    last_id = request.args.get('last_id', type=int)
+    page = request.args.get('page', default=1, type=int)
+    limit = request.args.get('limit', default=50, type=int)
+    offset = (page - 1) * limit
+
+    params = [login, friend, friend, login]
+    base = (
+        "SELECT id, sender_login, receiver_login, message, timestamp, status, request_id, "
+        "deleted_for_sender, deleted_for_receiver, file_path, file_size, mime_type "
+        "FROM messages WHERE ((sender_login = ? AND receiver_login = ?) OR (sender_login = ? AND receiver_login = ?))"
+    )
+
+    if last_id is not None:
+        query = base + " AND id > ? ORDER BY id DESC"
+        params.append(last_id)
+    else:
+        query = base + " ORDER BY id DESC LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+
+    rows = db_query(query, tuple(params), fetchall=True) or []
+
+    if rows:
+        ids_to_deliver = [r[0] for r in rows if r[2] == login and r[5] == 'sent']
+        if ids_to_deliver:
+            placeholders = ','.join(['?'] * len(ids_to_deliver))
+            db_query(f"UPDATE messages SET status = 'delivered' WHERE id IN ({placeholders})", tuple(ids_to_deliver), commit=True)
+
+    msgs = []
+    for r in rows:
+        m = format_message_row_for(login, r)
+        if m:
+            msgs.append(m)
+    return jsonify({'messages': msgs})
+
+
+@app.route('/api/messenger/mark_read', methods=['POST'])
+@protected_route
+def messenger_mark_read():
+    login = request.cookies.get('saved_name')
+    data = request.get_json() or {}
+    friend = data.get('friend')
+    if not friend:
+        return jsonify({'success': False}), 400
+    db_query("UPDATE messages SET status = 'read' WHERE receiver_login = ? AND sender_login = ? AND status != 'read'", (login, friend), commit=True)
+    notify_user(friend, {'new_messages': True})
+    return jsonify({'success': True})
+
+
+@app.route('/api/messenger/delete', methods=['POST'])
+@protected_route
+def messenger_delete():
+    login = request.cookies.get('saved_name')
+    data = request.get_json() or {}
+    message_id = data.get('id')
+    for_all = bool(data.get('for_all'))
+    if not message_id:
+        return jsonify({'success': False}), 400
+
+    row = db_query('SELECT sender_login, receiver_login FROM messages WHERE id = ?', (message_id,), fetchone=True)
+    if not row:
+        return jsonify({'success': False}), 404
+    sender_login, receiver_login = row
+
+    if for_all:
+        if login != sender_login:
+            return jsonify({'success': False, 'error': 'Forbidden'}), 403
+        db_query('UPDATE messages SET deleted_for_sender = 1, deleted_for_receiver = 1 WHERE id = ?', (message_id,), commit=True)
+        notify_user(receiver_login, {'new_messages': True})
+    else:
+        if login == sender_login:
+            db_query('UPDATE messages SET deleted_for_sender = 1 WHERE id = ?', (message_id,), commit=True)
+        elif login == receiver_login:
+            db_query('UPDATE messages SET deleted_for_receiver = 1 WHERE id = ?', (message_id,), commit=True)
+        else:
+            return jsonify({'success': False, 'error': 'Forbidden'}), 403
+    return jsonify({'success': True})
+
+
+@app.route('/api/messenger/block', methods=['POST'])
+@protected_route
+def messenger_block():
+    login = request.cookies.get('saved_name')
+    data = request.get_json() or {}
+    friend = data.get('friend')
+    if not friend:
+        return jsonify({'success': False}), 400
+    exists = db_query('SELECT 1 FROM blocked_users WHERE blocker_login = ? AND blocked_login = ?', (login, friend), fetchone=True)
+    if not exists:
+        db_query('INSERT INTO blocked_users (blocker_login, blocked_login) VALUES (?, ?)', (login, friend), commit=True)
+    return jsonify({'success': True})
+
+
+@app.route('/api/messenger/search')
+@protected_route
+def messenger_search():
+    login = request.cookies.get('saved_name')
+    q = (request.args.get('q') or '').strip()
+    if len(q) < 3:
+        return jsonify({'users': []})
+    rows = db_query("SELECT login, username, COALESCE(avatar_url, '/static/default_avatar.png') FROM users WHERE (login LIKE ? OR username LIKE ?) AND login != ? LIMIT 20", (f"%{q}%", f"%{q}%", login), fetchall=True) or []
+    users = [{'login': r[0], 'username': r[1] or r[0], 'avatar': r[2]} for r in rows]
+    return jsonify({'users': users})
+
+
+@app.route('/api/messenger/friends')
+@protected_route
+def messenger_friends():
+    login = request.cookies.get('saved_name')
+    rows = db_query(
+        '''
+        SELECT DISTINCT u.login, COALESCE(u.username, u.login) AS username, COALESCE(u.avatar_url, '/static/default_avatar.png') AS avatar, u.last_active
+        FROM users u
+        WHERE u.login IN (
+            SELECT friend_login FROM friends WHERE user_login = ? AND status = 'accepted'
+            UNION
+            SELECT user_login FROM friends WHERE friend_login = ? AND status = 'accepted'
+        )
+        ''',
+        (login, login),
+        fetchall=True
+    ) or []
+
+    def last_message_for(friend_login):
+        r = db_query(
+            '''
+            SELECT id, sender_login, receiver_login, message, timestamp, status, request_id, deleted_for_sender, deleted_for_receiver, file_path, file_size, mime_type
+            FROM messages
+            WHERE ((sender_login = ? AND receiver_login = ?) OR (sender_login = ? AND receiver_login = ?))
+            ORDER BY id DESC LIMIT 1
+            ''',
+            (login, friend_login, friend_login, login),
+            fetchone=True
+        )
+        if not r:
+            return '', 0
+        formatted = format_message_row_for(login, r)
+        if not formatted:
+            return '', 0
+        if formatted['is_file']:
+            return f"Файл: {formatted['text']}", 0
+        return formatted['text'], 0
+
+    def unread_count_for(friend_login):
+        c = db_query("SELECT COUNT(*) FROM messages WHERE receiver_login = ? AND sender_login = ? AND status != 'read' AND (deleted_for_receiver = 0)", (login, friend_login), fetchone=True)
+        return c[0] if c else 0
+
+    friends = []
+    for r in rows:
+        friend_login, username, avatar, last_active = r
+        last_message, _ = last_message_for(friend_login)
+        friends.append({'login': friend_login, 'username': username, 'avatar': avatar, 'last_active': last_active, 'last_message': last_message, 'unread_count': unread_count_for(friend_login)})
+
+    requests = []
+    return jsonify({'friends': friends, 'requests': requests})
+
+
+@app.route('/api/call/offer', methods=['POST'])
+@protected_route
+def call_offer():
+    login = request.cookies.get('saved_name')
+    data = request.get_json() or {}
+    to_user = data.get('to')
+    offer = data.get('offer')
+    if not to_user or not offer:
+        return jsonify({'success': False}), 400
+    if users_are_blocked(login, to_user):
+        return jsonify({'success': False, 'error': 'User blocked'}), 403
+    notify_user(to_user, {'call_offer': {'from': login, 'offer': offer}})
+    return jsonify({'success': True})
+
+
+@app.route('/sources/messenger')
+def messenger_page():
+    return send_file(os.path.join(BASE_DIR, 'messenger.html'))
 
 if __name__ == '__main__':
     init_db()
